@@ -165,6 +165,15 @@ if "game" not in st.session_state:
 if "player_name" not in st.session_state:
     st.session_state.player_name = ""
 
+if "last_room_result" not in st.session_state:
+    st.session_state.last_room_result = None
+
+if "last_question" not in st.session_state:
+    st.session_state.last_question = None
+
+if "accusation_result" not in st.session_state:
+    st.session_state.accusation_result = None
+
 
 game = st.session_state.game
 
@@ -215,10 +224,17 @@ if game is None:
         if submitted:
 
             if not player_name.strip():
-                st.warning("Please enter your researcher name.")
+
+                st.warning(
+                    "Please enter your researcher name."
+                )
 
             else:
-                st.session_state.player_name = player_name.strip()
+
+                st.session_state.player_name = (
+                    player_name.strip()
+                )
+
                 st.session_state.game = Game(
                     player_name=player_name.strip()
                 )
@@ -240,7 +256,9 @@ with st.sidebar:
         f"""
         <div class="researcher-card">
             <strong>{game.player_name}</strong><br>
-            <span style="color:#9da8ba;">Lead Investigator</span>
+            <span style="color:#9da8ba;">
+                Lead Investigator
+            </span>
         </div>
         """,
         unsafe_allow_html=True
@@ -283,7 +301,7 @@ with st.sidebar:
         - You have a limited number of actions.
         - Investigating a room costs 1 action.
         - Questioning a survivor costs 1 action.
-        - You may accuse only when you are ready.
+        - You may accuse when you are ready.
         - Evidence can be incomplete or misleading.
         - Cross-reference different clues.
         """
@@ -295,21 +313,33 @@ with st.sidebar:
         "🔄 Restart Investigation",
         use_container_width=True
     ):
+
         st.session_state.game = Game(
             player_name=st.session_state.player_name
         )
+
+        st.session_state.last_room_result = None
+        st.session_state.last_question = None
+        st.session_state.accusation_result = None
+
         st.rerun()
 
     if st.button(
         "👤 Change Researcher",
         use_container_width=True
     ):
+
         st.session_state.game = None
+
+        st.session_state.last_room_result = None
+        st.session_state.last_question = None
+        st.session_state.accusation_result = None
+
         st.rerun()
 
 
 # ============================================================
-# GAME HEADER
+# HEADER
 # ============================================================
 
 st.markdown(
@@ -325,9 +355,11 @@ st.markdown(
 st.markdown(
     f"""
     <div class="researcher-card">
-        <strong>🔬 Researcher:</strong> {game.player_name}
+        <strong>🔬 Researcher:</strong>
+        {game.player_name}
         &nbsp;&nbsp;|&nbsp;&nbsp;
-        <strong>📍 Status:</strong> Investigation active
+        <strong>📍 Status:</strong>
+        Investigation active
     </div>
     """,
     unsafe_allow_html=True
@@ -345,44 +377,64 @@ evidence_count = len(game.clues)
 m1, m2, m3, m4 = st.columns(4)
 
 with m1:
+
     st.markdown(
         f"""
         <div class="metric-card">
-            <div class="metric-label">Actions Remaining</div>
-            <div class="metric-value">{game.actions_left}</div>
+            <div class="metric-label">
+                Actions Remaining
+            </div>
+            <div class="metric-value">
+                {game.actions_left}
+            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
 with m2:
+
     st.markdown(
         f"""
         <div class="metric-card">
-            <div class="metric-label">Actions Used</div>
-            <div class="metric-value">{actions_used}</div>
+            <div class="metric-label">
+                Actions Used
+            </div>
+            <div class="metric-value">
+                {actions_used}
+            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
 with m3:
+
     st.markdown(
         f"""
         <div class="metric-card">
-            <div class="metric-label">Rooms Searched</div>
-            <div class="metric-value">{rooms_searched}</div>
+            <div class="metric-label">
+                Rooms Searched
+            </div>
+            <div class="metric-value">
+                {rooms_searched}
+            </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
 with m4:
+
     st.markdown(
         f"""
         <div class="metric-card">
-            <div class="metric-label">Evidence</div>
-            <div class="metric-value">{evidence_count}</div>
+            <div class="metric-label">
+                Evidence
+            </div>
+            <div class="metric-value">
+                {evidence_count}
+            </div>
         </div>
         """,
         unsafe_allow_html=True
@@ -405,10 +457,12 @@ if game.game_over:
             <div class="win-card">
                 <h2>🎉 CASE SOLVED</h2>
                 <p>
-                    Excellent work, <strong>{game.player_name}</strong>.
+                    Excellent work,
+                    <strong>{game.player_name}</strong>.
                 </p>
                 <p>
-                    Your accusation of <strong>{game.accusation}</strong>
+                    Your accusation of
+                    <strong>{game.accusation}</strong>
                     was correct.
                 </p>
             </div>
@@ -462,43 +516,73 @@ if game.game_over:
 
     st.markdown("## 🧾 Final Evidence Board")
 
-    if game.clues:
+    clues = game.get_clues()
 
-        for index, clue in enumerate(game.clues, 1):
+    if clues:
+
+        for index, clue in enumerate(
+            clues,
+            1
+        ):
+
+            room_name = clue.get(
+                "room",
+                "Unknown"
+            )
+
+            data = clue.get(
+                "data",
+                {}
+            )
 
             st.markdown(
                 f"""
                 <div class="evidence-card">
-                    <strong>Evidence #{index}</strong><br>
-                    <span style="color:#aeb8c8;">
-                        {clue.get("room", "Unknown location")}
+                    <strong>
+                        Evidence #{index}
+                    </strong>
+                    <br>
+                    <span style="color:#9da8ba;">
+                        📍 {room_name}
                     </span>
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
-            data = clue.get("data", {})
+            clue_type = data.get("type")
 
-            if data.get("type") == "lab_note":
+            if clue_type == "lab_note":
 
                 st.markdown(
                     f"### {data.get('title', 'Incident Report')}"
                 )
 
                 if data.get("date"):
-                    st.caption(data["date"])
+                    st.caption(
+                        data["date"]
+                    )
 
-                for time, text in data.get("lines", []):
-                    st.write(f"**{time}** — {text}")
+                for time, text in data.get(
+                    "lines",
+                    []
+                ):
+
+                    st.write(
+                        f"**{time}** — {text}"
+                    )
 
                 if data.get("note"):
-                    st.info(data["note"])
+                    st.info(
+                        data["note"]
+                    )
 
                 if data.get("signature"):
-                    st.caption(data["signature"])
+                    st.caption(
+                        data["signature"]
+                    )
 
-            elif data.get("type") == "riddle":
+            elif clue_type == "riddle":
 
                 st.markdown(
                     f"### {data.get('title', 'Storage Note')}"
@@ -511,17 +595,25 @@ if game.game_over:
                     )
 
                 if data.get("hint"):
-                    st.info(data["hint"])
+                    st.info(
+                        data["hint"]
+                    )
 
                 if data.get("entries"):
+
+                    st.markdown(
+                        "#### Access / Movement Log"
+                    )
 
                     for entry in data["entries"]:
                         st.write(entry)
 
                 if data.get("note"):
-                    st.info(data["note"])
+                    st.info(
+                        data["note"]
+                    )
 
-            elif data.get("type") == "vending":
+            elif clue_type == "vending":
 
                 st.markdown(
                     f"### {data.get('title', 'Supply Unit')}"
@@ -534,7 +626,7 @@ if game.game_over:
 
                 if data.get("survivors") is not None:
                     st.write(
-                        f"**Survivors recorded:** "
+                        f"**Survivors:** "
                         f"{data['survivors']}"
                     )
 
@@ -551,7 +643,9 @@ if game.game_over:
                     )
 
                 if data.get("note"):
-                    st.info(data["note"])
+                    st.info(
+                        data["note"]
+                    )
 
             else:
 
@@ -566,13 +660,17 @@ if game.game_over:
                             st.write(item)
 
                     else:
+
                         st.write(
                             f"**{key.replace('_', ' ').title()}:** "
                             f"{value}"
                         )
 
     else:
-        st.info("No evidence was collected.")
+
+        st.info(
+            "No evidence was collected."
+        )
 
     st.markdown("---")
 
@@ -580,9 +678,15 @@ if game.game_over:
         "🔄 PLAY AGAIN",
         use_container_width=True
     ):
+
         st.session_state.game = Game(
             player_name=st.session_state.player_name
         )
+
+        st.session_state.last_room_result = None
+        st.session_state.last_question = None
+        st.session_state.accusation_result = None
+
         st.rerun()
 
     st.stop()
@@ -603,7 +707,7 @@ tab_rooms, tab_questions, tab_evidence, tab_accuse = st.tabs(
 
 
 # ============================================================
-# ROOM INVESTIGATION
+# INVESTIGATE ROOMS
 # ============================================================
 
 with tab_rooms:
@@ -619,9 +723,14 @@ with tab_rooms:
 
     for room_name, room in ROOMS.items():
 
+        # ----------------------------------------------------
+        # ROOM CARD
+        # ----------------------------------------------------
+
         st.markdown(
             f"""
             <div class="room-card">
+
                 <div class="room-title">
                     {room.get("icon", "📍")} {room_name}
                 </div>
@@ -634,10 +743,15 @@ with tab_rooms:
                     <strong>Object:</strong>
                     {room.get("object", "")}
                 </p>
+
             </div>
             """,
             unsafe_allow_html=True
         )
+
+        # ----------------------------------------------------
+        # ALREADY INVESTIGATED
+        # ----------------------------------------------------
 
         if room_name in game.investigated_rooms:
 
@@ -663,11 +777,11 @@ with tab_rooms:
                 st.rerun()
 
 
-    # --------------------------------------------------------
-    # MOST RECENT ROOM RESULT
-    # --------------------------------------------------------
+    # ========================================================
+    # RECENT FINDING
+    # ========================================================
 
-    if "last_room_result" in st.session_state:
+    if st.session_state.last_room_result:
 
         st.markdown("---")
 
@@ -690,7 +804,10 @@ with tab_rooms:
                 f"""
                 <div class="clue-card">
                     <strong>
-                        {data.get("title", "Evidence recovered")}
+                        {data.get(
+                            "title",
+                            "Evidence recovered"
+                        )}
                     </strong>
                 </div>
                 """,
@@ -699,13 +816,14 @@ with tab_rooms:
 
             clue_type = data.get("type")
 
-            # =================================================
-            # LAB
-            # =================================================
+            # ------------------------------------------------
+            # LABORATORY
+            # ------------------------------------------------
 
             if clue_type == "lab_note":
 
                 if data.get("date"):
+
                     st.caption(
                         data["date"]
                     )
@@ -714,6 +832,7 @@ with tab_rooms:
                     "lines",
                     []
                 ):
+
                     st.write(
                         f"**{time}** — {text}"
                     )
@@ -730,9 +849,9 @@ with tab_rooms:
                         data["signature"]
                     )
 
-            # =================================================
+            # ------------------------------------------------
             # STORAGE
-            # =================================================
+            # ------------------------------------------------
 
             elif clue_type == "riddle":
 
@@ -767,9 +886,9 @@ with tab_rooms:
                         data["note"]
                     )
 
-            # =================================================
+            # ------------------------------------------------
             # CAFETERIA
-            # =================================================
+            # ------------------------------------------------
 
             elif clue_type == "vending":
 
@@ -806,9 +925,9 @@ with tab_rooms:
                         data["note"]
                     )
 
-            # =================================================
-            # FALLBACK
-            # =================================================
+            # ------------------------------------------------
+            # GENERIC CLUE
+            # ------------------------------------------------
 
             else:
 
@@ -893,22 +1012,31 @@ with tab_questions:
         st.rerun()
 
 
-    if "last_question" in st.session_state:
+    if st.session_state.last_question:
 
         st.markdown("---")
 
-        q = st.session_state.last_question
+        question_data = (
+            st.session_state.last_question
+        )
 
         st.markdown(
             f"""
             <div class="evidence-card">
-                <strong>💬 {q['character']}</strong>
+
+                <strong>
+                    💬 {question_data["character"]}
+                </strong>
+
                 <p style="color:#9da8ba;">
-                    Question: {q['question']}
+                    Question:
+                    {question_data["question"]}
                 </p>
+
                 <p>
-                    {q['response']}
+                    {question_data["response"]}
                 </p>
+
             </div>
             """,
             unsafe_allow_html=True
@@ -955,19 +1083,27 @@ with tab_evidence:
             st.markdown(
                 f"""
                 <div class="evidence-card">
+
                     <strong>
                         Evidence #{index}
                     </strong>
+
                     <br>
+
                     <span style="color:#9da8ba;">
                         📍 {room_name}
                     </span>
+
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
             clue_type = data.get("type")
+
+            # ------------------------------------------------
+            # LAB
+            # ------------------------------------------------
 
             if clue_type == "lab_note":
 
@@ -976,6 +1112,7 @@ with tab_evidence:
                 )
 
                 if data.get("date"):
+
                     st.caption(
                         data["date"]
                     )
@@ -990,14 +1127,20 @@ with tab_evidence:
                     )
 
                 if data.get("note"):
+
                     st.info(
                         data["note"]
                     )
 
                 if data.get("signature"):
+
                     st.caption(
                         data["signature"]
                     )
+
+            # ------------------------------------------------
+            # STORAGE
+            # ------------------------------------------------
 
             elif clue_type == "riddle":
 
@@ -1035,6 +1178,10 @@ with tab_evidence:
                     st.info(
                         data["note"]
                     )
+
+            # ------------------------------------------------
+            # CAFETERIA
+            # ------------------------------------------------
 
             elif clue_type == "vending":
 
@@ -1074,6 +1221,10 @@ with tab_evidence:
                     st.info(
                         data["note"]
                     )
+
+            # ------------------------------------------------
+            # GENERIC
+            # ------------------------------------------------
 
             else:
 
@@ -1136,22 +1287,20 @@ with tab_accuse:
 
         st.rerun()
 
-    if "accusation_result" in st.session_state:
+    if st.session_state.accusation_result:
 
         st.markdown("---")
-
-        result = st.session_state.accusation_result
 
         if accusation == MOLE:
 
             st.success(
-                result
+                st.session_state.accusation_result
             )
 
         else:
 
             st.error(
-                result
+                st.session_state.accusation_result
             )
 
 
