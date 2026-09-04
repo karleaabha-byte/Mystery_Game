@@ -2,103 +2,115 @@ import random
 
 
 class MoleAI:
+
     def __init__(self, name):
         self.name = name
 
     def choose_question_strategy(self, suspicion):
-        if suspicion < 30:
+
+        if suspicion < 20:
             options = [
                 "truth",
                 "truth",
-                "lie",
-                "help"
+                "truth",
+                "lie"
             ]
 
-        elif suspicion < 60:
+        elif suspicion < 50:
             options = [
                 "truth",
                 "truth",
                 "lie",
-                "help",
-                "help"
+                "lie",
+                "partial"
+            ]
+
+        elif suspicion < 75:
+            options = [
+                "lie",
+                "lie",
+                "partial",
+                "partial",
+                "truth"
             ]
 
         else:
             options = [
-                "truth",
-                "truth",
-                "help",
-                "help",
-                "truth"
+                "lie",
+                "lie",
+                "lie",
+                "partial"
             ]
 
         return random.choice(options)
 
+
     def choose_room_strategy(self, room, suspicion):
-        # The Laboratory contains the foundational clue.
+
+        # The laboratory is the foundational evidence.
         # Never sabotage it.
         if room == "Laboratory":
-            return "none"
+            return "normal"
 
-        if room == "Cafeteria":
-            if suspicion < 30:
-                options = [
-                    "none",
-                    "none",
-                    "none",
-                    "none",
-                    "sabotage_cafeteria"
-                ]
-
-            elif suspicion < 60:
-                options = [
-                    "none",
-                    "none",
-                    "none",
-                    "none",
-                    "none",
-                    "sabotage_cafeteria"
-                ]
-
-            else:
-                options = [
-                    "none",
-                    "none",
-                    "none",
-                    "help",
-                    "none"
-                ]
-
-            return random.choice(options)
 
         if room == "Storage":
+
             if suspicion < 30:
                 options = [
-                    "none",
-                    "none",
-                    "none",
-                    "none",
-                    "manipulate_riddle"
+                    "normal",
+                    "normal",
+                    "normal",
+                    "normal",
+                    "distort"
                 ]
 
             elif suspicion < 60:
                 options = [
-                    "none",
-                    "none",
-                    "none",
-                    "none",
-                    "none",
-                    "manipulate_riddle"
+                    "normal",
+                    "normal",
+                    "normal",
+                    "distort",
+                    "distort"
                 ]
 
             else:
                 options = [
-                    "none",
-                    "none",
-                    "none",
-                    "help"
+                    "normal",
+                    "distort",
+                    "distort",
+                    "distort"
                 ]
 
             return random.choice(options)
 
-        return "none"
+
+        if room == "Cafeteria":
+
+            if suspicion < 30:
+                options = [
+                    "normal",
+                    "normal",
+                    "normal",
+                    "normal",
+                    "partial"
+                ]
+
+            elif suspicion < 60:
+                options = [
+                    "normal",
+                    "normal",
+                    "partial",
+                    "partial"
+                ]
+
+            else:
+                options = [
+                    "normal",
+                    "partial",
+                    "partial"
+                ]
+
+            return random.choice(options)
+
+
+        return "normal"
