@@ -461,10 +461,6 @@ with tab3:
 
                 st.caption(data["signature"])
 
-                st.info(
-                    "Something about the maintenance note may be worth examining closely."
-                )
-
             # -------------------------------------------------
             # STORAGE
             # -------------------------------------------------
@@ -509,11 +505,6 @@ with tab3:
                 st.code(
                     data["system_log"],
                     language="text"
-                )
-
-                st.info(
-                    "Work out what the emergency system was doing "
-                    "and compare its identifier with the other evidence."
                 )
 
             # -------------------------------------------------
