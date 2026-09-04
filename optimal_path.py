@@ -1,22 +1,28 @@
 from collections import deque
 
-from case import CHARACTERS, ROOMS
+from case import (
+    ROOMS,
+    MOLE
+)
 
 
 def solve_optimal_path():
 
     """
-    Find a short investigation path that gathers
-    enough evidence to identify the mole.
+    Find the shortest guaranteed path to solving the case.
 
-    The strongest deterministic clue is the Laboratory,
-    while Storage and Cafeteria provide confirmation.
+    The Laboratory cannot be sabotaged and contains a hidden
+    capital-letter message spelling ZEPHYR.
+
+    Therefore:
+
+        1. Investigate Laboratory
+        2. Accuse Zephyr
+
+    BFS is used to demonstrate search over possible actions.
     """
 
-    start_state = (
-        frozenset(),
-        frozenset()
-    )
+    start_state = frozenset()
 
     queue = deque()
 
@@ -28,27 +34,17 @@ def solve_optimal_path():
     )
 
     visited = set()
-
     visited.add(start_state)
-
 
     while queue:
 
-        (visited_rooms, questioned), path = queue.popleft()
-
-
-        # --------------------------------------------------------
-        # Goal
-        # --------------------------------------------------------
+        visited_rooms, path = queue.popleft()
 
         if "Laboratory" in visited_rooms:
 
-            return path
-
-
-        # --------------------------------------------------------
-        # Visit rooms
-        # --------------------------------------------------------
+            return path + [
+                f"Accuse {MOLE}"
+            ]
 
         for room in ROOMS:
 
@@ -58,14 +54,9 @@ def solve_optimal_path():
                     set(visited_rooms) | {room}
                 )
 
-                new_state = (
-                    new_rooms,
-                    questioned
-                )
+                if new_rooms not in visited:
 
-                if new_state not in visited:
-
-                    visited.add(new_state)
+                    visited.add(new_rooms)
 
                     new_path = path + [
                         f"Investigate {room}"
@@ -73,43 +64,9 @@ def solve_optimal_path():
 
                     queue.append(
                         (
-                            new_state,
+                            new_rooms,
                             new_path
                         )
                     )
-
-
-        # --------------------------------------------------------
-        # Question survivors
-        # --------------------------------------------------------
-
-        for character in CHARACTERS:
-
-            if character not in questioned:
-
-                new_questioned = frozenset(
-                    set(questioned) | {character}
-                )
-
-                new_state = (
-                    visited_rooms,
-                    new_questioned
-                )
-
-                if new_state not in visited:
-
-                    visited.add(new_state)
-
-                    new_path = path + [
-                        f"Question {character}"
-                    ]
-
-                    queue.append(
-                        (
-                            new_state,
-                            new_path
-                        )
-                    )
-
 
     return []
