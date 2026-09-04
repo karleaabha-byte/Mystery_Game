@@ -1,26 +1,16 @@
-# optimal_path.py
-
 from collections import deque
 
-from case import (
-    CHARACTERS,
-    ROOMS,
-    MOLE
-)
+from case import CHARACTERS, ROOMS
 
 
 def solve_optimal_path():
 
     """
-    Find the minimum number of investigation actions
-    required to obtain enough deterministic evidence
-    to identify the mole.
+    Find a short investigation path that gathers
+    enough evidence to identify the mole.
 
-    For this case, the Laboratory clue directly reveals
-    the mole's identity.
-
-    BFS is used to demonstrate search over possible
-    investigation sequences.
+    The strongest deterministic clue is the Laboratory,
+    while Storage and Cafeteria provide confirmation.
     """
 
     start_state = (
@@ -47,18 +37,18 @@ def solve_optimal_path():
         (visited_rooms, questioned), path = queue.popleft()
 
 
-        # ---------------------------------------------
-        # Goal condition
-        # ---------------------------------------------
+        # --------------------------------------------------------
+        # Goal
+        # --------------------------------------------------------
 
         if "Laboratory" in visited_rooms:
 
             return path
 
 
-        # ---------------------------------------------
+        # --------------------------------------------------------
         # Visit rooms
-        # ---------------------------------------------
+        # --------------------------------------------------------
 
         for room in ROOMS:
 
@@ -89,9 +79,9 @@ def solve_optimal_path():
                     )
 
 
-        # ---------------------------------------------
-        # Ask characters
-        # ---------------------------------------------
+        # --------------------------------------------------------
+        # Question survivors
+        # --------------------------------------------------------
 
         for character in CHARACTERS:
 
