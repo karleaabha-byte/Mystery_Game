@@ -10,95 +10,116 @@ MOLE = "Zephyr"
 
 MAX_ACTIONS = 12
 
+
 ROOMS = {
+
     "Laboratory": {
         "icon": "🧪",
         "description": (
-            "A dim research laboratory. Equipment is still running "
-            "despite the evacuation."
+            "A dim research laboratory. Emergency lights pulse over "
+            "equipment that should have been shut down during evacuation."
         ),
         "object": (
-            "A researcher’s desk covered with papers, samples and "
-            "an incident report."
+            "A researcher's desk containing the incident report and "
+            "a handwritten maintenance checklist."
         ),
-        "normal_clue": {
-            "type": "lab_note",
+
+        "clue": {
+            "type": "lab_report",
             "title": "INCIDENT REPORT #047",
-            "date": "17 OCTOBER — 23:40",
-            "lines": [
+            "date": "17 OCTOBER — NIGHT SHIFT",
+
+            "events": [
                 ("23:40", "Power fluctuation detected."),
                 ("23:42", "Security alarm activated."),
                 ("23:43", "Research equipment checked."),
                 ("23:46", "Restricted storage terminal accessed."),
                 ("23:49", "Cafeteria security cameras went offline.")
             ],
+
             "note": (
-                "The person responsible knew exactly which systems "
-                "to disable. Check the maintenance records before "
-                "trusting anyone's story."
+                "The failures did not occur randomly. Each affected "
+                "system was accessed separately, several minutes apart."
             ),
-            "maintenance_note": (
-                "Before leaving, verify the following:\n\n"
-                "The technician must carry the proper identification.\n"
-                "Access logs should be checked before equipment is moved.\n"
-                "Keep restricted doors secured during an evacuation.\n"
-                "Do not leave temporary credentials beside an active terminal.\n"
-                "Every unusual access should be recorded."
-            ),
+
+            "maintenance": [
+                "Restricted systems require an authorized badge.",
+                "Terminal identifiers are recorded automatically.",
+                "Temporary credentials must never be left unattended.",
+                "Security camera controls are located in the cafeteria."
+            ],
+
             "signature": "— Dr. Morgan"
         }
     },
 
+
     "Storage": {
         "icon": "📦",
         "description": (
-            "Boxes of emergency supplies are stacked against the walls. "
-            "Something has been disturbed."
+            "Emergency supplies are stacked against the walls. "
+            "One restricted container appears to have been opened recently."
         ),
-        "object": "A battered metal box marked RESTRICTED.",
-        "normal_clue": {
+        "object": (
+            "A battered metal container labelled RESTRICTED."
+        ),
+
+        "clue": {
             "type": "storage_log",
-            "title": "RESTRICTED STORAGE ACCESS LOG",
+            "title": "RESTRICTED STORAGE ACCESS",
+
             "entries": [
-                "23:43 — Storage inspection completed.",
+                "23:43 — Routine storage inspection completed.",
                 "23:46 — Restricted terminal accessed.",
-                "23:46 — Access badge detected: Z-07.",
+                "23:46 — Badge identifier recorded: Z-07.",
                 "23:47 — Restricted container opened.",
-                "23:48 — Container closed."
+                "23:48 — Container secured."
             ],
+
             "note": (
-                "The log does not identify the person carrying the badge. "
-                "Only the badge identifier was recorded."
+                "The system records the badge, not the person wearing it."
             ),
-            "secondary_note": (
-                "A handwritten note on the container reads:\n\n"
-                "\"If you're looking for the person, don't start with the name. "
-                "Start with the record.\""
+
+            "handwritten": (
+                "Maintenance shorthand:\n\n"
+                "Z-series badges are issued to personnel with "
+                "restricted-system clearance."
             )
         }
     },
 
+
     "Cafeteria": {
         "icon": "🍔",
         "description": (
-            "An abandoned cafeteria. The emergency vending machine "
-            "is still powered on."
+            "An abandoned cafeteria. The emergency vending terminal "
+            "is still receiving power."
         ),
-        "object": "An old Survivor Supply vending machine.",
-        "normal_clue": {
-            "type": "vending",
-            "title": "SURVIVOR SUPPLY UNIT",
-            "instruction": "Emergency PIN = number of survivors × 2",
-            "survivors": 5,
-            "terminal_id": "Z-07",
-            "note": (
-                "Maintenance note: The emergency system was accessed "
-                "shortly before the security cameras went offline."
+        "object": (
+            "An old Survivor Supply terminal beside the security console."
+        ),
+
+        "clue": {
+            "type": "cafeteria_log",
+            "title": "EMERGENCY SUPPLY TERMINAL",
+
+            "instruction": (
+                "Emergency verification requires the number of survivors × 2."
             ),
-            "system_log": (
-                "23:49 — Emergency access terminal activated.\n"
-                "23:49 — Terminal ID: Z-07\n"
+
+            "survivors": 5,
+
+            "terminal_id": "Z-07",
+
+            "system_log": [
+                "23:49 — Emergency access terminal activated.",
+                "23:49 — Terminal identifier: Z-07.",
                 "23:50 — Security camera network unavailable."
+            ],
+
+            "note": (
+                "The supply terminal and the security camera controls "
+                "share the same local access network."
             )
         }
     }
@@ -115,67 +136,97 @@ QUESTIONS = [
 
 
 CHARACTER_RESPONSES = {
+
     "Raven": {
+
         QUESTIONS[0]:
             "I was in the laboratory checking the research equipment.",
+
         QUESTIONS[1]:
-            "I thought I heard someone near the cafeteria.",
+            "I heard the alarm and noticed someone moving toward the storage corridor.",
+
         QUESTIONS[2]:
-            "Yes, briefly. I was looking for water.",
+            "Yes, briefly. I went there looking for water.",
+
         QUESTIONS[3]:
-            "No. I only noticed that some supplies were missing.",
+            "I noticed some emergency supplies were missing, but I didn't touch them.",
+
         QUESTIONS[4]:
-            "Zephyr has been acting unusually quiet."
+            "Zephyr has been unusually quiet since the alarm."
     },
+
 
     "Zephyr": {
+
         QUESTIONS[0]:
-            "I was in my quarters. I didn't hear anything.",
+            "I was in my quarters. I didn't hear the alarm clearly.",
+
         QUESTIONS[1]:
-            "No. Everything seemed completely normal to me.",
+            "No. Everything seemed normal to me.",
+
         QUESTIONS[2]:
             "No, I stayed away from the cafeteria.",
+
         QUESTIONS[3]:
-            "I saw Luca near the storage area earlier.",
+            "I heard Luca had been moving things in storage.",
+
         QUESTIONS[4]:
-            "Raven. She seems to be investigating everyone."
+            "Raven. She seems determined to make everyone suspicious."
     },
 
+
     "Luca": {
+
         QUESTIONS[0]:
-            "I was helping organize supplies in storage.",
+            "I was in storage checking the emergency supplies.",
+
         QUESTIONS[1]:
-            "I saw someone leaving the cafeteria.",
+            "I heard someone near the storage terminal around the time of the alarm.",
+
         QUESTIONS[2]:
-            "No, I was mostly in storage.",
+            "No. I stayed mostly in storage.",
+
         QUESTIONS[3]:
-            "Some equipment was moved without my permission.",
+            "Some boxes had definitely been moved without my permission.",
+
         QUESTIONS[4]:
             "I don't completely trust Zephyr."
     },
 
+
     "Marinette": {
+
         QUESTIONS[0]:
-            "I was in the laboratory with Raven.",
+            "I was in the laboratory with Raven for part of the incident.",
+
         QUESTIONS[1]:
-            "The vending machine was behaving strangely.",
+            "The vending terminal was behaving strangely after the alarm.",
+
         QUESTIONS[2]:
-            "Yes, but only for a minute.",
+            "Yes, but only briefly.",
+
         QUESTIONS[3]:
             "No, I haven't touched the supplies.",
+
         QUESTIONS[4]:
             "I'm not sure yet."
     },
 
+
     "Adrien": {
+
         QUESTIONS[0]:
             "I was checking the main hallway.",
+
         QUESTIONS[1]:
             "I heard a noise coming from storage.",
+
         QUESTIONS[2]:
-            "Yes, I went there earlier.",
+            "Yes, I went through the cafeteria earlier.",
+
         QUESTIONS[3]:
-            "I saw some boxes moved around.",
+            "I saw several boxes moved around.",
+
         QUESTIONS[4]:
             "Luca was acting nervous earlier."
     }
