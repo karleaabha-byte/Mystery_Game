@@ -1,436 +1,215 @@
 from case import (
     CHARACTERS,
     MOLE,
+    MAX_ACTIONS,
     ROOMS,
     QUESTIONS,
-    CHARACTER_RESPONSES,
-    MAX_ACTIONS
+    CHARACTER_RESPONSES
 )
 
 from ai_agent import MoleAI
 
 
 class Game:
-
     def __init__(self, player_name="Player"):
         self.player_name = player_name
 
-        self.max_actions = MAX_ACTIONS
-        self.actions_remaining = MAX_ACTIONS
-        self.actions_used = 0
-
-        self.mole = MOLE
-        self.ai = MoleAI(MOLE)
-
-        self.visited_rooms = set()
+        self.actions_left = MAX_ACTIONS
+        self.investigated_rooms = set()
         self.questioned_characters = set()
+        self.clues = []
 
         self.suspicion = {
             character: 0
             for character in CHARACTERS
         }
 
-        self.evidence = []
-
-        self.activity_log = []
-        self.action_history = []
-
-        self.ai_lie_count = 0
-        self.ai_truth_count = 0
-        self.ai_help_count = 0
-        self.ai_sabotage_count = 0
-
-        self.cafeteria_sabotaged = False
-        self.riddle_manipulated = False
+        self.mole_ai = MoleAI(MOLE)
 
         self.game_over = False
-        self.researcher_won = False
-        self.accused = None
-        self.last_event = None
+        self.accusation = None
+        self.result = None
 
-    def use_action(self, action_name):
-        if self.actions_remaining <= 0:
-            return False
-
-        self.actions_remaining -= 1
-        self.actions_used += 1
-        self.action_history.append(action_name)
-
-        return True
-
-    def change_suspicion(self, character, amount):
-        if character not in self.suspicion:
-            return
-
-        self.suspicion[character] = max(
-            0,
-            min(
-                100,
-                self.suspicion[character] + amount
-            )
-        )
-
-    def visit_room(self, room):
-
+    def investigate_room(self, room_name):
         if self.game_over:
-            return False
+            return "The investigation is already over."
 
-        if self.actions_remaining <= 0:
-            return False
+        if self.actions_left <= 0:
+            return "You have no actions remaining."
 
-        if room in self.visited_rooms:
-            return False
+        if room_name not in ROOMS:
+            return "Unknown room."
 
-        if room not in ROOMS:
-            return False
+        if room_name in self.investigated_rooms:
+            return "You have already investigated this room."
 
-        self.use_action(
-            f"Investigate {room}"
+        self.actions_left -= 1
+        self.investigated_rooms.add(room_name)
+
+        room = ROOMS[room_name]
+        clue = room["normal_clue"]
+
+        strategy = self.mole_ai.choose_room_strategy(
+            room_name,
+            self.get_mole_suspicion()
         )
 
-        self.visited_rooms.add(room)
-
-        ai_strategy = self.ai.choose_room_strategy(
-            room,
-            self.suspicion[self.mole]
-        )
-
-        room_data = ROOMS[room]
-
-        # --------------------------------------------------
-        # LABORATORY
-        # --------------------------------------------------
-
-        if room == "Laboratory":
-
-            self.evidence.append(
-                "Laboratory clue discovered: the strange capital letters "
-                "in the maintenance note spell ZEPHYR."
-            )
-
-            self.change_suspicion(
-                "Zephyr",
-                40
-            )
-
-            self.activity_log.append(
-                "🔬 Laboratory evidence points toward Zephyr."
-            )
-
-            self.last_event = {
-                "type": "room",
-                "room": room,
-                "sabotaged": False,
-                "clue": "ZEPHYR"
-            }
-
-            return True
-
-        # --------------------------------------------------
-        # CAFETERIA
-        # --------------------------------------------------
-
-        if room == "Cafeteria":
-
-            if ai_strategy == "sabotage_cafeteria":
-
-                self.cafeteria_sabotaged = True
-                self.ai_sabotage_count += 1
-
-                self.evidence.append(
-                    "Cafeteria evidence was tampered with, "
-                    "but the emergency PIN 10 is still readable. "
-                    "Terminal Z-07 was also identified as the terminal "
-                    "connected to Zephyr."
-                )
-
-                self.change_suspicion(
-                    "Zephyr",
-                    15
-                )
-
-                self.activity_log.append(
-                    "⚠ Cafeteria evidence was tampered with, "
-                    "but the main PIN clue survived."
-                )
-
-                self.last_event = {
-                    "type": "room",
-                    "room": room,
-                    "sabotaged": True
+        if strategy == "sabotage_cafeteria":
+            self.clues.append({
+                "room": room_name,
+                "type": "partial",
+                "data": {
+                    "title": clue["title"],
+                    "instruction": clue["instruction"],
+                    "survivors": clue["survivors"],
+                    "terminal_id": clue["terminal_id"],
+                    "note": (
+                        "The display flickers before you can inspect "
+                        "the rest of the system log."
+                    )
                 }
+            })
 
-                return True
-
-            self.evidence.append(
-                "Cafeteria clue: 5 survivors × 2 = PIN 10. "
-                "The access record shows PIN 10 was used from terminal Z-07, "
-                "which is assigned to Zephyr."
-            )
-
-            self.change_suspicion(
-                "Zephyr",
-                25
-            )
-
-            self.activity_log.append(
-                "🍔 Cafeteria evidence links terminal Z-07 to Zephyr."
-            )
-
-            self.last_event = {
-                "type": "room",
-                "room": room,
-                "sabotaged": False
-            }
-
-            return True
-
-        # --------------------------------------------------
-        # STORAGE
-        # --------------------------------------------------
-
-        if room == "Storage":
-
-            if ai_strategy == "manipulate_riddle":
-
-                self.riddle_manipulated = True
-                self.ai_sabotage_count += 1
-
-                self.evidence.append(
-                    "The Storage riddle was slightly altered, "
-                    "but the motion log still shows badge Z-07. "
-                    "The facility register identifies Z-07 as Zephyr."
-                )
-
-                self.change_suspicion(
-                    "Zephyr",
-                    10
-                )
-
-                self.activity_log.append(
-                    "⚠ The Storage riddle was tampered with, "
-                    "but the badge evidence remains usable."
-                )
-
-                self.last_event = {
-                    "type": "room",
-                    "room": room,
-                    "sabotaged": True
+        elif strategy == "manipulate_riddle":
+            self.clues.append({
+                "room": room_name,
+                "type": "partial",
+                "data": {
+                    "title": clue["title"],
+                    "entries": clue["entries"],
+                    "note": clue["secondary_note"]
                 }
-
-                return True
-
-            self.evidence.append(
-                "Storage clue: the riddle points toward a shadow. "
-                "A nearby motion log records badge Z-07 moving through "
-                "the storage corridor. Z-07 belongs to Zephyr."
-            )
-
-            self.change_suspicion(
-                "Zephyr",
-                20
-            )
-
-            self.activity_log.append(
-                "📦 Storage evidence links badge Z-07 to Zephyr."
-            )
-
-            self.last_event = {
-                "type": "room",
-                "room": room,
-                "sabotaged": False
-            }
-
-            return True
-
-        return False
-
-    def ask_question(self, character, question):
-
-        if self.game_over:
-            return False
-
-        if self.actions_remaining <= 0:
-            return False
-
-        if character in self.questioned_characters:
-            return False
-
-        if character not in CHARACTER_RESPONSES:
-            return False
-
-        if question not in QUESTIONS:
-            return False
-
-        self.use_action(
-            f"Question {character}"
-        )
-
-        self.questioned_characters.add(
-            character
-        )
-
-        normal_response = CHARACTER_RESPONSES[
-            character
-        ][question]
-
-        # --------------------------------------------------
-        # QUESTIONING THE MOLE
-        # --------------------------------------------------
-
-        if character == self.mole:
-
-            strategy = self.ai.choose_question_strategy(
-                self.suspicion[self.mole]
-            )
-
-            if strategy == "lie":
-
-                response = self.generate_lie()
-
-                self.change_suspicion(
-                    self.mole,
-                    12
-                )
-
-                self.ai_lie_count += 1
-
-                self.activity_log.append(
-                    "⚠ Zephyr's answer contained suspicious information."
-                )
-
-            elif strategy == "help":
-
-                response = (
-                    normal_response
-                    + "\n\n"
-                    "They offer to help you investigate the facility."
-                )
-
-                self.change_suspicion(
-                    self.mole,
-                    -5
-                )
-
-                self.ai_help_count += 1
-
-                self.activity_log.append(
-                    "🤝 Zephyr cooperated with the investigation."
-                )
-
-            else:
-
-                response = normal_response
-
-                self.ai_truth_count += 1
-
-                self.activity_log.append(
-                    "💬 Zephyr answered directly."
-                )
-
-        # --------------------------------------------------
-        # QUESTIONING OTHER CHARACTERS
-        # --------------------------------------------------
+            })
 
         else:
+            self.clues.append({
+                "room": room_name,
+                "type": clue["type"],
+                "data": clue
+            })
 
-            response = normal_response
+        return f"You investigated the {room_name}."
 
-            if "Zephyr" in response:
-
-                self.change_suspicion(
-                    "Zephyr",
-                    18
-                )
-
-                self.activity_log.append(
-                    f"🔎 {character}'s testimony increased "
-                    "suspicion toward Zephyr."
-                )
-
-            else:
-
-                self.activity_log.append(
-                    f"💬 {character} answered your question."
-                )
-
-        self.last_event = {
-            "type": "question",
-            "character": character,
-            "question": question,
-            "response": response
-        }
-
-        return True
-
-    def generate_lie(self):
-
-        lies = [
-            "I was nowhere near the cafeteria when that happened.",
-            "I don't remember seeing anything unusual.",
-            "I was helping someone else in the facility.",
-            "I think Raven was acting suspiciously.",
-            "I'm certain Luca was near the storage area.",
-            "Everything was completely normal."
-        ]
-
-        index = (
-            self.ai_lie_count
-            % len(lies)
-        )
-
-        return lies[index]
-
-    def accuse(self, character):
-
+    def question_character(self, character, question):
         if self.game_over:
-            return
+            return "The investigation is already over."
+
+        if self.actions_left <= 0:
+            return "You have no actions remaining."
 
         if character not in CHARACTERS:
-            return
+            return "Unknown character."
 
-        if self.actions_remaining > 0:
-            self.use_action(
-                f"Accuse {character}"
-            )
+        if question not in QUESTIONS:
+            return "Unknown question."
 
-        self.accused = character
-        self.game_over = True
+        self.actions_left -= 1
+        self.questioned_characters.add(character)
 
-        if character == self.mole:
+        strategy = self.mole_ai.choose_question_strategy(
+            self.get_mole_suspicion()
+        )
 
-            self.researcher_won = True
+        response = CHARACTER_RESPONSES[character][question]
 
-            result = (
-                f"Correct. {character} was the mole."
-            )
+        if character == MOLE:
+            if strategy == "lie":
+                response = self._mole_lie(question, response)
 
-            self.activity_log.append(
-                f"🎉 {self.player_name} correctly identified "
-                f"{character} as the mole."
-            )
+            elif strategy == "help":
+                response = self._mole_partial_truth(
+                    question,
+                    response
+                )
 
-        else:
+        self._update_suspicion(
+            character,
+            question,
+            response
+        )
 
-            self.researcher_won = False
+        return response
 
-            result = (
-                f"Incorrect. {character} was not the mole."
-            )
+    def _mole_lie(self, question, original_response):
+        lies = {
+            QUESTIONS[0]:
+                "I was in my quarters the entire time. Nobody came near me.",
 
-            self.activity_log.append(
-                f"❌ {self.player_name} accused {character}, "
-                "but the accusation was incorrect."
-            )
+            QUESTIONS[1]:
+                "No. I didn't hear anything unusual anywhere.",
 
-        self.last_event = {
-            "type": "accusation",
-            "result": result
+            QUESTIONS[2]:
+                "No. I never went anywhere near the cafeteria.",
+
+            QUESTIONS[3]:
+                "I only heard that Luca had been moving things.",
+
+            QUESTIONS[4]:
+                "Raven. She's been trying to make everyone suspicious."
         }
 
-    def best_suspect(self):
+        return lies.get(question, original_response)
 
-        return max(
-            self.suspicion,
-            key=self.suspicion.get
-        )
+    def _mole_partial_truth(self, question, original_response):
+        truths = {
+            QUESTIONS[0]:
+                "I was in my quarters for most of that period.",
+
+            QUESTIONS[1]:
+                "I noticed something was wrong, but I didn't investigate.",
+
+            QUESTIONS[2]:
+                "I may have passed through the area earlier.",
+
+            QUESTIONS[3]:
+                "I noticed the storage area had been disturbed.",
+
+            QUESTIONS[4]:
+                "Raven has been asking a lot of questions."
+        }
+
+        return truths.get(question, original_response)
+
+    def _update_suspicion(self, character, question, response):
+        if character == MOLE:
+            self.suspicion[character] += 8
+
+        if "Zephyr" in response and character != "Zephyr":
+            self.suspicion["Zephyr"] += 3
+
+        if "Luca" in response and character != "Luca":
+            self.suspicion["Luca"] += 2
+
+    def get_mole_suspicion(self):
+        return self.suspicion.get(MOLE, 0)
+
+    def get_clues(self):
+        return self.clues
+
+    def get_remaining_actions(self):
+        return self.actions_left
+
+    def accuse(self, character):
+        if self.game_over:
+            return self.result
+
+        if character not in CHARACTERS:
+            return "Unknown character."
+
+        if self.actions_left <= 0:
+            return "You have no actions remaining."
+
+        self.game_over = True
+        self.accusation = character
+
+        if character == MOLE:
+            self.result = (
+                f"Correct! {character} was the Mole."
+            )
+        else:
+            self.result = (
+                f"Wrong. {character} was not the Mole. "
+                f"The Mole was {MOLE}."
+            )
+
+        return self.result
