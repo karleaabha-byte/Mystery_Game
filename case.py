@@ -8,69 +8,146 @@ CHARACTERS = [
     "Adrien"
 ]
 
-# Fixed mole for the current case
 MOLE = "Zephyr"
 
 MAX_ACTIONS = 12
 
 
+# ============================================================
+# ROOM DATA
+# ============================================================
+
 ROOMS = {
+
     "Laboratory": {
-        "description": (
-            "A research laboratory filled with equipment, "
-            "notes and computers."
-        ),
-        "clue": (
-            "You find a handwritten note on a laboratory desk.\n\n"
-            "Most of the note looks ordinary, but several letters "
-            "are strangely capitalized.\n\n"
-            "The capitalized letters spell:\n\n"
-            "Z E P H Y R"
-        )
+
+        "icon": "🧪",
+
+        "description":
+            "A dim research laboratory. Equipment is still running "
+            "despite the evacuation.",
+
+        "object":
+            "A researcher’s desk covered with papers, samples and "
+            "an incident report.",
+
+        "normal_clue": {
+
+            "type": "lab_note",
+
+            "title": "INCIDENT REPORT #047",
+
+            "date": "17 OCTOBER — 23:40",
+
+            "lines": [
+                ("23:40", "Power fluctuation detected."),
+                ("23:42", "Security alarm activated."),
+                ("23:43", "Research equipment checked."),
+                ("23:46", "Restricted storage terminal accessed."),
+                ("23:49", "Cafeteria security cameras went offline.")
+            ],
+
+            "note": (
+                "The person responsible knew exactly which systems "
+                "to disable. Check the maintenance records before "
+                "trusting anyone's story."
+            ),
+
+            "signature": "— Dr. Morgan"
+        }
     },
+
 
     "Storage": {
-        "description": (
-            "A storage room containing emergency supplies "
-            "and research materials."
-        ),
-        "clue": (
-            'You find a locked box containing a riddle:\n\n'
-            '"I move without legs,\n'
-            'I speak without a mouth,\n'
-            'I disappear when you find me.\n\n'
-            'What am I?"'
-        )
+
+        "icon": "📦",
+
+        "description":
+            "Boxes of emergency supplies are stacked against the walls. "
+            "Something has been disturbed.",
+
+        "object":
+            "A battered metal box marked RESTRICTED.",
+
+        "normal_clue": {
+
+            "type": "riddle",
+
+            "title": "HANDWRITTEN NOTE — BOX 17",
+
+            "text": (
+                "I have no feet, but I can follow.\n"
+                "I have no mouth, but I can warn.\n"
+                "I disappear when the lights go out.\n\n"
+                "What am I?"
+            ),
+
+            "hint": (
+                "Underneath the riddle is a handwritten reminder:\n\n"
+                "\"Think about what follows you when you investigate.\""
+            )
+        }
     },
 
+
     "Cafeteria": {
-        "description": (
-            "An abandoned cafeteria containing an old "
-            "vending machine."
-        ),
-        "clue": (
-            "Beside the vending machine you find a note:\n\n"
-            '"The PIN is the number of survivors currently '
-            'inside the facility multiplied by 2."\n\n'
-            "There are 5 survivors.\n\n"
-            "PIN = 10"
-        )
+
+        "icon": "🍔",
+
+        "description":
+            "An abandoned cafeteria. The emergency vending machine "
+            "is still powered on.",
+
+        "object":
+            "An old Survivor Supply vending machine.",
+
+        "normal_clue": {
+
+            "type": "vending",
+
+            "title": "SURVIVOR SUPPLY UNIT",
+
+            "instruction":
+                "Emergency PIN = number of survivors × 2",
+
+            "survivors": 5,
+
+            "pin": "10",
+
+            "note":
+                "Maintenance note: The emergency system was accessed "
+                "shortly before the security cameras went offline."
+        }
     }
 }
 
 
+# ============================================================
+# QUESTIONS
+# ============================================================
+
 QUESTIONS = [
+
     "Where were you when the security alarm went off?",
+
     "Did you notice anything suspicious?",
+
     "Did you enter the cafeteria today?",
+
     "Do you know anything about the missing supplies?",
+
     "Who do you trust the least?"
 ]
 
 
+# ============================================================
+# CHARACTER RESPONSES
+# ============================================================
+
 CHARACTER_RESPONSES = {
 
     "Raven": {
+
         QUESTIONS[0]:
             "I was in the laboratory checking the research equipment.",
 
@@ -87,12 +164,14 @@ CHARACTER_RESPONSES = {
             "Zephyr has been acting unusually quiet."
     },
 
+
     "Zephyr": {
+
         QUESTIONS[0]:
             "I was in my quarters. I didn't hear anything.",
 
         QUESTIONS[1]:
-            "No. Everything seemed normal to me.",
+            "No. Everything seemed completely normal to me.",
 
         QUESTIONS[2]:
             "No, I stayed away from the cafeteria.",
@@ -104,7 +183,9 @@ CHARACTER_RESPONSES = {
             "Raven. She seems to be investigating everyone."
     },
 
+
     "Luca": {
+
         QUESTIONS[0]:
             "I was helping organize supplies in storage.",
 
@@ -121,7 +202,9 @@ CHARACTER_RESPONSES = {
             "I don't completely trust Zephyr."
     },
 
+
     "Marinette": {
+
         QUESTIONS[0]:
             "I was in the laboratory with Raven.",
 
@@ -138,7 +221,9 @@ CHARACTER_RESPONSES = {
             "I'm not sure yet."
     },
 
+
     "Adrien": {
+
         QUESTIONS[0]:
             "I was checking the main hallway.",
 
