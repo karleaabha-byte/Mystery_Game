@@ -1,29 +1,19 @@
 import random
 
 
-# ============================================================
-# MOLE AI
-# ============================================================
-
 class MoleAI:
 
     def __init__(self, name):
-
         self.name = name
-
-
-    # ========================================================
-    # QUESTION STRATEGY
-    # ========================================================
 
     def choose_question_strategy(self, suspicion):
 
         if suspicion < 30:
 
             options = [
-                "lie",
-                "lie",
                 "truth",
+                "truth",
+                "lie",
                 "help"
             ]
 
@@ -31,14 +21,16 @@ class MoleAI:
 
             options = [
                 "truth",
+                "truth",
                 "lie",
                 "help",
-                "truth"
+                "help"
             ]
 
         else:
 
             options = [
+                "truth",
                 "truth",
                 "help",
                 "help",
@@ -47,39 +39,38 @@ class MoleAI:
 
         return random.choice(options)
 
-
-    # ========================================================
-    # ROOM STRATEGY
-    # ========================================================
-
     def choose_room_strategy(self, room, suspicion):
 
         # Laboratory is NEVER sabotaged.
-        # It contains the most important clue.
+        # This guarantees the player always has
+        # one reliable path to solving the case.
+
         if room == "Laboratory":
             return "none"
 
+        # Cafeteria sabotage is uncommon.
 
-        # Cafeteria sabotage is deliberately limited.
         if room == "Cafeteria":
 
             if suspicion < 30:
 
                 options = [
-                    "sabotage_cafeteria",
                     "none",
                     "none",
-                    "none"
+                    "none",
+                    "none",
+                    "sabotage_cafeteria"
                 ]
 
             elif suspicion < 60:
 
                 options = [
-                    "sabotage_cafeteria",
                     "none",
                     "none",
                     "none",
-                    "help"
+                    "none",
+                    "none",
+                    "sabotage_cafeteria"
                 ]
 
             else:
@@ -87,32 +78,36 @@ class MoleAI:
                 options = [
                     "none",
                     "none",
+                    "none",
                     "help",
-                    "help"
+                    "none"
                 ]
 
             return random.choice(options)
 
+        # Storage sabotage is also uncommon.
 
-        # Storage manipulation is also limited.
         if room == "Storage":
 
             if suspicion < 30:
 
                 options = [
-                    "manipulate_riddle",
                     "none",
                     "none",
-                    "none"
+                    "none",
+                    "none",
+                    "manipulate_riddle"
                 ]
 
             elif suspicion < 60:
 
                 options = [
-                    "manipulate_riddle",
                     "none",
                     "none",
-                    "help"
+                    "none",
+                    "none",
+                    "none",
+                    "manipulate_riddle"
                 ]
 
             else:
@@ -120,10 +115,10 @@ class MoleAI:
                 options = [
                     "none",
                     "none",
+                    "none",
                     "help"
                 ]
 
             return random.choice(options)
-
 
         return "none"
