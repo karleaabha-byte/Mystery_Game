@@ -1,5 +1,3 @@
-# game.py
-
 from case import (
     CHARACTERS,
     MOLE,
@@ -14,7 +12,14 @@ from ai_agent import MoleAI
 
 class Game:
 
-    def __init__(self):
+    def __init__(self, player_name="Researcher"):
+
+        # --------------------------------------------------------
+        # PLAYER
+        # --------------------------------------------------------
+
+        self.player_name = player_name
+
 
         # --------------------------------------------------------
         # ACTIONS
@@ -63,7 +68,6 @@ class Game:
         # --------------------------------------------------------
 
         self.activity_log = []
-
         self.action_history = []
 
 
@@ -142,6 +146,9 @@ class Game:
         if room in self.visited_rooms:
             return False
 
+        if room not in ROOMS:
+            return False
+
 
         self.use_action(
             f"Investigate {room}"
@@ -150,108 +157,172 @@ class Game:
         self.visited_rooms.add(room)
 
 
-        # AI makes an internal decision.
+        # --------------------------------------------------------
+        # AI DECISION
+        # --------------------------------------------------------
+
         ai_strategy = self.ai.choose_room_strategy(
             room,
             self.suspicion[self.mole]
         )
 
 
-        room_data = ROOMS[room]
-
-
         # ========================================================
-        # CAFETERIA SABOTAGE
+        # LABORATORY
         # ========================================================
 
-        if (
-            room == "Cafeteria"
-            and ai_strategy == "sabotage_cafeteria"
-        ):
+        if room == "Laboratory":
 
-            self.cafeteria_sabotaged = True
-
-            self.ai_sabotage_count += 1
-
+            self.change_suspicion(
+                "Zephyr",
+                35
+            )
 
             self.evidence.append(
-                "The Cafeteria vending-machine note "
-                "appears to have been damaged."
+                "LABORATORY: Hidden capital letters in the field "
+                "note spell ZEPHYR."
             )
 
+            self.evidence.append(
+                "LABORATORY: The access pattern suggests the mole "
+                "already knew how to reach restricted systems."
+            )
 
             self.activity_log.append(
-                "⚠ AI sabotage detected: cafeteria evidence altered."
+                "🧪 Laboratory evidence strongly points toward Zephyr."
             )
-
 
             self.last_event = {
                 "type": "room",
                 "room": room,
-                "sabotaged": True
+                "sabotaged": False
             }
-
 
             return True
 
 
         # ========================================================
-        # STORAGE RIDDLE MANIPULATION
+        # STORAGE
         # ========================================================
 
-        if (
-            room == "Storage"
-            and ai_strategy == "manipulate_riddle"
-        ):
+        if room == "Storage":
 
-            self.riddle_manipulated = True
+            # Even when manipulated, the important access record
+            # remains available.
+            if ai_strategy == "manipulate_riddle":
 
-            self.ai_sabotage_count += 1
+                self.riddle_manipulated = True
+                self.ai_sabotage_count += 1
 
+                self.change_suspicion(
+                    "Zephyr",
+                    15
+                )
+
+                self.evidence.append(
+                    "STORAGE: The riddle was tampered with, but "
+                    "the access slip still shows initials Z.R."
+                )
+
+                self.activity_log.append(
+                    "⚠ Storage evidence was manipulated, but the "
+                    "access record survived."
+                )
+
+                self.last_event = {
+                    "type": "room",
+                    "room": room,
+                    "sabotaged": True
+                }
+
+                return True
+
+
+            # Normal storage investigation
+            self.change_suspicion(
+                "Zephyr",
+                20
+            )
 
             self.evidence.append(
-                "The Storage riddle appears to have "
-                "been deliberately altered."
+                "STORAGE: Box 17 was accessed at 23:44 using "
+                "authorized initials Z.R."
             )
-
 
             self.activity_log.append(
-                "⚠ AI sabotage detected: storage riddle manipulated."
+                "📦 Storage access records point toward Z.R."
             )
-
 
             self.last_event = {
                 "type": "room",
                 "room": room,
-                "sabotaged": True
+                "sabotaged": False
             }
-
 
             return True
 
 
         # ========================================================
-        # NORMAL ROOM
+        # CAFETERIA
         # ========================================================
 
-        self.evidence.append(
-            f"{room} investigation completed."
-        )
+        if room == "Cafeteria":
+
+            if ai_strategy == "sabotage_cafeteria":
+
+                self.cafeteria_sabotaged = True
+                self.ai_sabotage_count += 1
+
+                # Important information survives.
+                self.change_suspicion(
+                    "Zephyr",
+                    20
+                )
+
+                self.evidence.append(
+                    "CAFETERIA: The vending-machine note was damaged, "
+                    "but the surviving access record identifies ZEPHYR."
+                )
+
+                self.activity_log.append(
+                    "⚠ Cafeteria evidence was partially damaged, "
+                    "but the PIN and user record remain usable."
+                )
+
+                self.last_event = {
+                    "type": "room",
+                    "room": room,
+                    "sabotaged": True
+                }
+
+                return True
 
 
-        self.activity_log.append(
-            f"🔎 Investigated the {room}."
-        )
+            # Normal cafeteria evidence
+            self.change_suspicion(
+                "Zephyr",
+                20
+            )
+
+            self.evidence.append(
+                "CAFETERIA: Emergency PIN is 10. The access log "
+                "records ZEPHYR as the last successful user."
+            )
+
+            self.activity_log.append(
+                "🍔 Cafeteria access records point toward Zephyr."
+            )
+
+            self.last_event = {
+                "type": "room",
+                "room": room,
+                "sabotaged": False
+            }
+
+            return True
 
 
-        self.last_event = {
-            "type": "room",
-            "room": room,
-            "sabotaged": False
-        }
-
-
-        return True
+        return False
 
 
     # ============================================================
@@ -267,6 +338,12 @@ class Game:
             return False
 
         if character in self.questioned_characters:
+            return False
+
+        if character not in CHARACTERS:
+            return False
+
+        if question not in QUESTIONS:
             return False
 
 
@@ -329,7 +406,7 @@ class Game:
 
                 self.change_suspicion(
                     self.mole,
-                    -10
+                    -8
                 )
 
                 self.ai_help_count += 1
@@ -431,7 +508,11 @@ class Game:
         if self.game_over:
             return
 
-        # Accusation uses an action if available.
+        if character not in CHARACTERS:
+            return
+
+
+        # Accusation uses one action if available.
         if self.actions_remaining > 0:
 
             self.use_action(
