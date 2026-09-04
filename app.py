@@ -17,16 +17,6 @@ st.set_page_config(
 
 
 # ============================================================
-# SESSION STATE
-# ============================================================
-
-if "game" not in st.session_state:
-    st.session_state.game = Game()
-
-game = st.session_state.game
-
-
-# ============================================================
 # CSS
 # ============================================================
 
@@ -248,6 +238,16 @@ st.markdown(
         border-radius: 3px;
     }
 
+    .start-box {
+        max-width: 700px;
+        margin: 100px auto;
+        padding: 40px;
+        background: #171717;
+        border: 2px solid #555555;
+        border-radius: 10px;
+        text-align: center;
+    }
+
     </style>
     """,
     unsafe_allow_html=True
@@ -255,17 +255,96 @@ st.markdown(
 
 
 # ============================================================
+# START SCREEN
+# ============================================================
+
+if "game" not in st.session_state:
+
+    st.markdown(
+        """
+        <div class="start-box">
+
+            <div style="font-size:70px;">
+                🧟
+            </div>
+
+            <h1>
+                WHO IS THE MOLE?
+            </h1>
+
+            <p style="color:#999999;">
+                ADVERSARIAL AI AGENT
+                <br>
+                ZOMBIE APOCALYPSE SIMULATION
+            </p>
+
+            <hr>
+
+            <h3>
+                ENTER YOUR NAME, RESEARCHER
+            </h3>
+
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    with st.form("player_setup"):
+
+        player_name = st.text_input(
+            "PLAYER NAME",
+            placeholder="Enter your name..."
+        )
+
+        start_game = st.form_submit_button(
+            "🧪 BEGIN INVESTIGATION",
+            use_container_width=True
+        )
+
+        if start_game:
+
+            player_name = player_name.strip()
+
+            if not player_name:
+
+                st.error(
+                    "Please enter your name before starting."
+                )
+
+            else:
+
+                st.session_state.game = Game(
+                    player_name
+                )
+
+                st.rerun()
+
+    st.stop()
+
+
+# ============================================================
+# GET GAME
+# ============================================================
+
+game = st.session_state.game
+
+
+# ============================================================
 # HEADER
 # ============================================================
 
 st.html(
-    """
+    f"""
     <div class="game-title">
         🧟 WHO IS THE MOLE?
     </div>
 
     <div class="game-subtitle">
         ADVERSARIAL AI AGENT • ZOMBIE APOCALYPSE SIMULATION
+    </div>
+
+    <div style="text-align:center;color:#888888;">
+        RESEARCHER: <b>{game.player_name}</b>
     </div>
     """
 )
@@ -306,6 +385,9 @@ st.html(
 with st.sidebar:
 
     st.header("📁 CASE FILE")
+
+    st.write("**RESEARCHER**")
+    st.write(game.player_name)
 
     st.write("**CASE**")
     st.write("Zombie Apocalypse Mole Identification")
@@ -349,7 +431,7 @@ with st.sidebar:
     st.write("• Lie")
     st.write("• Tell the truth")
     st.write("• Help you")
-    st.write("• Sabotage cafeteria evidence")
+    st.write("• Partially sabotage evidence")
     st.write("• Manipulate the storage riddle")
 
     st.divider()
@@ -358,7 +440,8 @@ with st.sidebar:
         "🔄 RESTART CASE",
         use_container_width=True
     ):
-        st.session_state.game = Game()
+
+        del st.session_state.game
         st.rerun()
 
 
@@ -392,7 +475,9 @@ for i, character in enumerate(CHARACTERS):
             """
         )
 
-        st.progress(suspicion / 100)
+        st.progress(
+            suspicion / 100
+        )
 
 
 # ============================================================
@@ -460,7 +545,9 @@ with room_tab:
 
             elif game.actions_remaining == 0:
 
-                st.warning("NO ACTIONS REMAINING")
+                st.warning(
+                    "NO ACTIONS REMAINING"
+                )
 
             else:
 
@@ -469,7 +556,9 @@ with room_tab:
                     key=f"room_{room}",
                     use_container_width=True
                 ):
+
                     game.visit_room(room)
+
                     st.rerun()
 
 
@@ -484,6 +573,8 @@ with room_tab:
 
         room = game.last_event["room"]
 
+        data = ROOMS[room]["normal_clue"]
+
         st.divider()
 
         st.header(
@@ -496,8 +587,6 @@ with room_tab:
         # ====================================================
 
         if room == "Laboratory":
-
-            data = ROOMS["Laboratory"]["normal_clue"]
 
             st.html(
                 f"""
@@ -519,6 +608,42 @@ with room_tab:
                     f"**{time}** — {event}"
                 )
 
+
+            # ------------------------------------------------
+            # MIXED CAPITAL LETTER CLUE
+            # ------------------------------------------------
+
+            note = (
+                "the emergency response system recorded a strange sequence. "
+                "the technician who reviewed the access trail wrote the "
+                "following note:\n\n"
+
+                "there was no forced entry into the restricted systems. "
+                "the person already knew the access route. "
+                "the security terminal registered an unfamiliar pattern. "
+                "the maintenance team could not explain it. "
+                "the access record was later checked against survivor logs. "
+                "the final entry remained unexplained."
+            )
+
+            # Add visible capital letters to the note.
+            note = (
+                "the emergency response system recorded a strange sequence. "
+                "the technician who reviewed the access trail wrote the "
+                "following note:\n\n"
+
+                "there was no forced entry into the restricted systems. "
+                "the person already knew the access route. "
+                "the security terminal registered an unfamiliar pattern. "
+                "the maintenance team could not explain it. "
+                "the access record was later checked against survivor logs. "
+                "the final entry remained unexplained.\n\n"
+
+                "The hidden message is encoded using six capital letters: "
+                "Z E P H Y R"
+            )
+
+
             st.html(
                 f"""
                 <div class="paper">
@@ -526,7 +651,13 @@ with room_tab:
                     <b>FIELD NOTE</b>
 
                     <p>
-                        "{data["note"]}"
+                        {note.replace(chr(10), "<br>")}
+                    </p>
+
+                    <p>
+                        <i>
+                            Look carefully at the capital letters.
+                        </i>
                     </p>
 
                     <p style="text-align:right;">
@@ -537,10 +668,13 @@ with room_tab:
                 """
             )
 
+
+            st.success(
+                "🔎 Hidden clue detected: Z E P H Y R"
+            )
+
             st.info(
-                "The report suggests that the saboteur knew "
-                "which systems to target. Compare this with "
-                "survivor testimony."
+                data["note_explanation"]
             )
 
 
@@ -550,8 +684,6 @@ with room_tab:
 
         elif room == "Storage":
 
-            data = ROOMS["Storage"]["normal_clue"]
-
             if game.riddle_manipulated:
 
                 st.html(
@@ -559,17 +691,16 @@ with room_tab:
                     <div class="warning-box">
 
                         <div class="warning-title">
-                            ⚠ EVIDENCE TAMPERING DETECTED
+                            ⚠ PARTIAL EVIDENCE TAMPERING
                         </div>
 
                         <p>
-                            The original riddle appears to have
-                            been deliberately modified.
+                            Someone altered the riddle.
                         </p>
 
                         <p>
-                            Several words have been crossed out
-                            and replaced.
+                            However, the access record underneath
+                            it remains intact.
                         </p>
 
                     </div>
@@ -581,7 +712,7 @@ with room_tab:
                     <div class="riddle">
 
                         <div class="riddle-title">
-                            HANDWRITTEN NOTE — BOX 17
+                            ALTERED NOTE — BOX 17
                         </div>
 
                         I have no feet, but I can follow.<br>
@@ -601,9 +732,33 @@ with room_tab:
                     """
                 )
 
+                st.html(
+                    """
+                    <div class="paper">
+
+                        <b>ACCESS SLIP</b>
+
+                        <p>
+                            ACCESS TIME: 23:44
+                        </p>
+
+                        <p>
+                            AUTHORIZED INITIALS:
+                            <b>Z.R.</b>
+                        </p>
+
+                        <p>
+                            The riddle may be unreliable,
+                            but the access record was not altered.
+                        </p>
+
+                    </div>
+                    """
+                )
+
                 st.warning(
-                    "Someone may have deliberately altered "
-                    "the evidence."
+                    "The mole tried to confuse the riddle, "
+                    "but the important evidence survived."
                 )
 
             else:
@@ -638,14 +793,42 @@ with room_tab:
                     """
                 )
 
+                st.html(
+                    f"""
+                    <div class="paper">
+
+                        <b>ACCESS SLIP</b>
+
+                        <p>
+                            ACCESS TIME: 23:44
+                        </p>
+
+                        <p>
+                            AUTHORIZED INITIALS:
+                            <b>Z.R.</b>
+                        </p>
+
+                        <p>
+                            This places someone with the initials
+                            Z.R. inside restricted storage shortly
+                            before the cameras went offline.
+                        </p>
+
+                    </div>
+                    """
+                )
+
+                st.info(
+                    "The storage record provides a second clue: "
+                    "the initials Z.R. match Zephyr."
+                )
+
 
         # ====================================================
         # CAFETERIA
         # ====================================================
 
         elif room == "Cafeteria":
-
-            data = ROOMS["Cafeteria"]["normal_clue"]
 
             if game.cafeteria_sabotaged:
 
@@ -654,35 +837,70 @@ with room_tab:
                     <div class="warning-box">
 
                         <div class="warning-title">
-                            ⚠ VENDING UNIT DAMAGED
+                            ⚠ VENDING UNIT PARTIALLY DAMAGED
                         </div>
 
                         <p>
-                            Someone has torn away part of the
-                            maintenance note.
-                        </p>
-
-                        <p>
-                            The original PIN instructions are
-                            incomplete.
+                            Someone damaged the maintenance note,
+                            but the emergency PIN is still displayed.
                         </p>
 
                     </div>
                     """
                 )
 
-                st.code(
+                st.html(
                     """
-SURVIVOR SUPPLY UNIT
+                    <div class="vending">
 
-PIN: 1_
+                        <h2>
+                            SURVIVOR SUPPLY UNIT
+                        </h2>
 
-SYSTEM STATUS:
-PARTIAL EVIDENCE
+                        <div class="vending-screen">
 
-[ MAINTENANCE NOTE DAMAGED ]
-""",
-                    language="text"
+                            EMERGENCY PIN
+
+                            <br><br>
+
+                            <span class="pin">
+                                10
+                            </span>
+
+                        </div>
+
+                    </div>
+                    """
+                )
+
+                st.html(
+                    """
+                    <div class="paper">
+
+                        <b>SURVIVING ACCESS LOG</b>
+
+                        <p>
+                            LAST SUCCESSFUL USER:
+                            <b>ZEPHYR</b>
+                        </p>
+
+                        <p>
+                            PIN:
+                            <b>10</b>
+                        </p>
+
+                        <p>
+                            Some maintenance information was destroyed,
+                            but the important access record remains.
+                        </p>
+
+                    </div>
+                    """
+                )
+
+                st.warning(
+                    "The AI damaged the evidence, but it did not "
+                    "destroy the clue identifying the last user."
                 )
 
             else:
@@ -724,8 +942,34 @@ PARTIAL EVIDENCE
                     """
                 )
 
+                st.html(
+                    f"""
+                    <div class="paper">
+
+                        <b>PIN ACCESS RECORD</b>
+
+                        <p>
+                            Emergency PIN:
+                            <b>{data["pin"]}</b>
+                        </p>
+
+                        <p>
+                            Last successful user:
+                            <b>ZEPHYR</b>
+                        </p>
+
+                        <p>
+                            {data["pin_clue"]}
+                        </p>
+
+                    </div>
+                    """
+                )
+
                 st.info(
-                    data["note"]
+                    "The PIN itself is 10. More importantly, "
+                    "the access record identifies Zephyr as "
+                    "the person who entered it."
                 )
 
 
@@ -769,7 +1013,10 @@ with question_tab:
             """
         )
 
-        st.progress(suspicion / 100)
+        st.progress(
+            suspicion / 100
+        )
+
 
     with q_columns[1]:
 
@@ -791,7 +1038,9 @@ with question_tab:
 
         elif game.game_over:
 
-            st.info("The case is closed.")
+            st.info(
+                "The case is closed."
+            )
 
         elif game.actions_remaining <= 0:
 
@@ -897,7 +1146,10 @@ with accusation_tab:
             use_container_width=True
         ):
 
-            game.accuse(accused)
+            game.accuse(
+                accused
+            )
+
             st.rerun()
 
     else:
@@ -915,6 +1167,11 @@ with accusation_tab:
                     <h2>
                         RESEARCHER WINS
                     </h2>
+
+                    <p>
+                        Congratulations,
+                        <b>{game.player_name}</b>.
+                    </p>
 
                     <p>
                         Your accusation of
@@ -941,7 +1198,8 @@ with accusation_tab:
                     </h2>
 
                     <p>
-                        You accused
+                        <b>{game.player_name}</b>,
+                        you accused
                         <b>{game.accused}</b>.
                     </p>
 
@@ -996,7 +1254,9 @@ with st.expander(
 
     if not game.activity_log:
 
-        st.write("No activity yet.")
+        st.write(
+            "No activity yet."
+        )
 
     else:
 
@@ -1015,7 +1275,9 @@ if game.game_over:
 
     st.divider()
 
-    st.header("📊 INVESTIGATION ANALYTICS")
+    st.header(
+        "📊 INVESTIGATION ANALYTICS"
+    )
 
     col1, col2, col3, col4 = st.columns(4)
 
@@ -1048,7 +1310,9 @@ if game.game_over:
         )
 
 
-    st.subheader("🤖 AI BEHAVIOUR")
+    st.subheader(
+        "🤖 AI BEHAVIOUR"
+    )
 
     ai1, ai2, ai3 = st.columns(3)
 
@@ -1085,21 +1349,21 @@ if game.game_over:
     )
 
     st.write(
-        "Regardless of whether you won or lost, "
-        "this shows a shorter investigation path "
-        "that could have been used."
+        "A strong investigation does not require questioning "
+        "everyone. The best strategy is to collect independent "
+        "evidence and confirm the same suspect."
     )
 
     optimal_path = [
         "Investigate Laboratory",
+        "Investigate Storage",
         "Investigate Cafeteria",
-        "Question Raven",
-        "Question Luca",
-        "Question Zephyr",
         "Accuse Zephyr"
     ]
 
-    optimal_actions = len(optimal_path)
+    optimal_actions = len(
+        optimal_path
+    )
 
     actual_actions = game.actions_used
 
@@ -1117,13 +1381,19 @@ if game.game_over:
             </p>
 
             <p>
-                Suggested optimal investigation:
+                Suggested investigation:
                 <b>{optimal_actions} actions</b>
+            </p>
+
+            <p>
+                The three rooms provide independent clues
+                pointing toward Zephyr.
             </p>
 
         </div>
         """
     )
+
 
     st.subheader(
         "🔎 OPTIMAL INVESTIGATION PATH"
