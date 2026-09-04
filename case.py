@@ -28,7 +28,7 @@ ROOMS = {
             "despite the evacuation.",
 
         "object":
-            "A researcher’s desk covered with papers, samples and "
+            "A researcher's desk covered with papers, samples and "
             "an incident report.",
 
         "normal_clue": {
@@ -48,9 +48,41 @@ ROOMS = {
             ],
 
             "note": (
-                "The person responsible knew exactly which systems "
-                "to disable. Check the maintenance records before "
-                "trusting anyone's story."
+                "the emergency response system recorded a strange sequence. "
+                "the technician who reviewed the access trail wrote the "
+                "following note:\n\n"
+
+                "there was no forced entry into the restricted systems. "
+                "the person already knew the access route. "
+                "the security terminal registered an unfamiliar pattern. "
+                "the maintenance team could not explain it. "
+                "the access record was later checked against survivor logs. "
+                "the final entry remained unexplained.\n\n"
+
+                "Look carefully at the capitalization in this note."
+            ),
+
+            "capital_clue": (
+                "the emergency response system recorded a strange sequence. "
+                "the technician who reviewed the access trail wrote the "
+                "following note:\n\n"
+
+                "there was no forced entry into the restricted systems. "
+                "the person already knew the access route. "
+                "the security terminal registered an unfamiliar pattern. "
+                "the maintenance team could not explain it. "
+                "the access record was later checked against survivor logs. "
+                "the final entry remained unexplained.\n\n"
+
+                "Look carefully at the capitalization in this note."
+            ),
+
+            "hidden_message": "ZEPHYR",
+
+            "note_explanation": (
+                "The capital letters hidden inside the field note spell "
+                "ZEPHYR. This strongly suggests that Zephyr had access "
+                "to the systems used during the sabotage."
             ),
 
             "signature": "— Dr. Morgan"
@@ -85,6 +117,23 @@ ROOMS = {
             "hint": (
                 "Underneath the riddle is a handwritten reminder:\n\n"
                 "\"Think about what follows you when you investigate.\""
+            ),
+
+            "answer": "A shadow",
+
+            "extra_clue": (
+                "Beside the riddle is a storage access slip. "
+                "It shows that Box 17 was opened shortly before "
+                "the cafeteria cameras failed.\n\n"
+                "The initials on the access slip are: Z.R."
+            ),
+
+            "manipulated_clue": (
+                "The riddle has been altered, but the storage access "
+                "slip underneath it is still readable.\n\n"
+                "ACCESS TIME: 23:44\n"
+                "AUTHORIZED INITIALS: Z.R.\n\n"
+                "The tampering changes the riddle, but not the access record."
             )
         }
     },
@@ -116,7 +165,27 @@ ROOMS = {
 
             "note":
                 "Maintenance note: The emergency system was accessed "
-                "shortly before the security cameras went offline."
+                "shortly before the security cameras went offline.",
+
+            "pin_clue": (
+                "PIN CLUE:\n"
+                "The emergency PIN is 10.\n\n"
+                "The maintenance access log shows that PIN 10 was "
+                "successfully entered from the terminal assigned to "
+                "survivor ZEPHYR.\n\n"
+                "The PIN itself opens the supply unit, while the access "
+                "record identifies who used it."
+            ),
+
+            "sabotaged_pin_clue": (
+                "The maintenance note has been damaged, but the "
+                "vending machine still displays the emergency PIN: 10.\n\n"
+                "A surviving fragment of the access log reads:\n\n"
+                "LAST SUCCESSFUL USER: ZEPHYR\n"
+                "PIN: 10\n\n"
+                "The sabotage removed some details, but the important "
+                "access information remains readable."
+            )
         }
     }
 }
