@@ -12,115 +12,55 @@ from ai_agent import MoleAI
 
 class Game:
 
-    def __init__(self, player_name="Researcher"):
-
-        # --------------------------------------------------------
-        # PLAYER
-        # --------------------------------------------------------
-
+    def __init__(self, player_name="Player"):
         self.player_name = player_name
-
-
-        # --------------------------------------------------------
-        # ACTIONS
-        # --------------------------------------------------------
 
         self.max_actions = MAX_ACTIONS
         self.actions_remaining = MAX_ACTIONS
         self.actions_used = 0
 
-
-        # --------------------------------------------------------
-        # AI
-        # --------------------------------------------------------
-
         self.mole = MOLE
         self.ai = MoleAI(MOLE)
 
-
-        # --------------------------------------------------------
-        # INVESTIGATION
-        # --------------------------------------------------------
-
         self.visited_rooms = set()
         self.questioned_characters = set()
-
-
-        # --------------------------------------------------------
-        # SUSPICION
-        # --------------------------------------------------------
 
         self.suspicion = {
             character: 0
             for character in CHARACTERS
         }
 
-
-        # --------------------------------------------------------
-        # EVIDENCE
-        # --------------------------------------------------------
-
         self.evidence = []
-
-
-        # --------------------------------------------------------
-        # ACTIVITY
-        # --------------------------------------------------------
 
         self.activity_log = []
         self.action_history = []
-
-
-        # --------------------------------------------------------
-        # AI STATS
-        # --------------------------------------------------------
 
         self.ai_lie_count = 0
         self.ai_truth_count = 0
         self.ai_help_count = 0
         self.ai_sabotage_count = 0
 
-
-        # --------------------------------------------------------
-        # SABOTAGE STATE
-        # --------------------------------------------------------
-
         self.cafeteria_sabotaged = False
         self.riddle_manipulated = False
-
-
-        # --------------------------------------------------------
-        # GAME STATE
-        # --------------------------------------------------------
 
         self.game_over = False
         self.researcher_won = False
         self.accused = None
         self.last_event = None
 
-
-    # ============================================================
-    # ACTION SYSTEM
-    # ============================================================
-
     def use_action(self, action_name):
-
         if self.actions_remaining <= 0:
             return False
 
         self.actions_remaining -= 1
         self.actions_used += 1
-
         self.action_history.append(action_name)
 
         return True
 
-
-    # ============================================================
-    # SUSPICION
-    # ============================================================
-
     def change_suspicion(self, character, amount):
+        if character not in self.suspicion:
+            return
 
         self.suspicion[character] = max(
             0,
@@ -129,11 +69,6 @@ class Game:
                 self.suspicion[character] + amount
             )
         )
-
-
-    # ============================================================
-    # VISIT ROOM
-    # ============================================================
 
     def visit_room(self, room):
 
@@ -149,122 +84,51 @@ class Game:
         if room not in ROOMS:
             return False
 
-
         self.use_action(
             f"Investigate {room}"
         )
 
         self.visited_rooms.add(room)
 
-
-        # --------------------------------------------------------
-        # AI DECISION
-        # --------------------------------------------------------
-
         ai_strategy = self.ai.choose_room_strategy(
             room,
             self.suspicion[self.mole]
         )
 
+        room_data = ROOMS[room]
 
-        # ========================================================
+        # --------------------------------------------------
         # LABORATORY
-        # ========================================================
+        # --------------------------------------------------
 
         if room == "Laboratory":
 
+            self.evidence.append(
+                "Laboratory clue discovered: the strange capital letters "
+                "in the maintenance note spell ZEPHYR."
+            )
+
             self.change_suspicion(
                 "Zephyr",
-                35
-            )
-
-            self.evidence.append(
-                "LABORATORY: Hidden capital letters in the field "
-                "note spell ZEPHYR."
-            )
-
-            self.evidence.append(
-                "LABORATORY: The access pattern suggests the mole "
-                "already knew how to reach restricted systems."
+                40
             )
 
             self.activity_log.append(
-                "🧪 Laboratory evidence strongly points toward Zephyr."
+                "🔬 Laboratory evidence points toward Zephyr."
             )
 
             self.last_event = {
                 "type": "room",
                 "room": room,
-                "sabotaged": False
+                "sabotaged": False,
+                "clue": "ZEPHYR"
             }
 
             return True
 
-
-        # ========================================================
-        # STORAGE
-        # ========================================================
-
-        if room == "Storage":
-
-            # Even when manipulated, the important access record
-            # remains available.
-            if ai_strategy == "manipulate_riddle":
-
-                self.riddle_manipulated = True
-                self.ai_sabotage_count += 1
-
-                self.change_suspicion(
-                    "Zephyr",
-                    15
-                )
-
-                self.evidence.append(
-                    "STORAGE: The riddle was tampered with, but "
-                    "the access slip still shows initials Z.R."
-                )
-
-                self.activity_log.append(
-                    "⚠ Storage evidence was manipulated, but the "
-                    "access record survived."
-                )
-
-                self.last_event = {
-                    "type": "room",
-                    "room": room,
-                    "sabotaged": True
-                }
-
-                return True
-
-
-            # Normal storage investigation
-            self.change_suspicion(
-                "Zephyr",
-                20
-            )
-
-            self.evidence.append(
-                "STORAGE: Box 17 was accessed at 23:44 using "
-                "authorized initials Z.R."
-            )
-
-            self.activity_log.append(
-                "📦 Storage access records point toward Z.R."
-            )
-
-            self.last_event = {
-                "type": "room",
-                "room": room,
-                "sabotaged": False
-            }
-
-            return True
-
-
-        # ========================================================
+        # --------------------------------------------------
         # CAFETERIA
-        # ========================================================
+        # --------------------------------------------------
 
         if room == "Cafeteria":
 
@@ -273,20 +137,21 @@ class Game:
                 self.cafeteria_sabotaged = True
                 self.ai_sabotage_count += 1
 
-                # Important information survives.
-                self.change_suspicion(
-                    "Zephyr",
-                    20
+                self.evidence.append(
+                    "Cafeteria evidence was tampered with, "
+                    "but the emergency PIN 10 is still readable. "
+                    "Terminal Z-07 was also identified as the terminal "
+                    "connected to Zephyr."
                 )
 
-                self.evidence.append(
-                    "CAFETERIA: The vending-machine note was damaged, "
-                    "but the surviving access record identifies ZEPHYR."
+                self.change_suspicion(
+                    "Zephyr",
+                    15
                 )
 
                 self.activity_log.append(
-                    "⚠ Cafeteria evidence was partially damaged, "
-                    "but the PIN and user record remain usable."
+                    "⚠ Cafeteria evidence was tampered with, "
+                    "but the main PIN clue survived."
                 )
 
                 self.last_event = {
@@ -297,20 +162,19 @@ class Game:
 
                 return True
 
-
-            # Normal cafeteria evidence
-            self.change_suspicion(
-                "Zephyr",
-                20
+            self.evidence.append(
+                "Cafeteria clue: 5 survivors × 2 = PIN 10. "
+                "The access record shows PIN 10 was used from terminal Z-07, "
+                "which is assigned to Zephyr."
             )
 
-            self.evidence.append(
-                "CAFETERIA: Emergency PIN is 10. The access log "
-                "records ZEPHYR as the last successful user."
+            self.change_suspicion(
+                "Zephyr",
+                25
             )
 
             self.activity_log.append(
-                "🍔 Cafeteria access records point toward Zephyr."
+                "🍔 Cafeteria evidence links terminal Z-07 to Zephyr."
             )
 
             self.last_event = {
@@ -321,13 +185,65 @@ class Game:
 
             return True
 
+        # --------------------------------------------------
+        # STORAGE
+        # --------------------------------------------------
+
+        if room == "Storage":
+
+            if ai_strategy == "manipulate_riddle":
+
+                self.riddle_manipulated = True
+                self.ai_sabotage_count += 1
+
+                self.evidence.append(
+                    "The Storage riddle was slightly altered, "
+                    "but the motion log still shows badge Z-07. "
+                    "The facility register identifies Z-07 as Zephyr."
+                )
+
+                self.change_suspicion(
+                    "Zephyr",
+                    10
+                )
+
+                self.activity_log.append(
+                    "⚠ The Storage riddle was tampered with, "
+                    "but the badge evidence remains usable."
+                )
+
+                self.last_event = {
+                    "type": "room",
+                    "room": room,
+                    "sabotaged": True
+                }
+
+                return True
+
+            self.evidence.append(
+                "Storage clue: the riddle points toward a shadow. "
+                "A nearby motion log records badge Z-07 moving through "
+                "the storage corridor. Z-07 belongs to Zephyr."
+            )
+
+            self.change_suspicion(
+                "Zephyr",
+                20
+            )
+
+            self.activity_log.append(
+                "📦 Storage evidence links badge Z-07 to Zephyr."
+            )
+
+            self.last_event = {
+                "type": "room",
+                "room": room,
+                "sabotaged": False
+            }
+
+            return True
 
         return False
-
-
-    # ============================================================
-    # QUESTION CHARACTER
-    # ============================================================
 
     def ask_question(self, character, question):
 
@@ -340,39 +256,33 @@ class Game:
         if character in self.questioned_characters:
             return False
 
-        if character not in CHARACTERS:
+        if character not in CHARACTER_RESPONSES:
             return False
 
         if question not in QUESTIONS:
             return False
 
-
         self.use_action(
             f"Question {character}"
         )
 
-        self.questioned_characters.add(character)
-
+        self.questioned_characters.add(
+            character
+        )
 
         normal_response = CHARACTER_RESPONSES[
             character
         ][question]
 
-
-        # ========================================================
-        # MOLE RESPONSE
-        # ========================================================
+        # --------------------------------------------------
+        # QUESTIONING THE MOLE
+        # --------------------------------------------------
 
         if character == self.mole:
 
             strategy = self.ai.choose_question_strategy(
                 self.suspicion[self.mole]
             )
-
-
-            # ----------------------------------------------------
-            # LIE
-            # ----------------------------------------------------
 
             if strategy == "lie":
 
@@ -389,24 +299,17 @@ class Game:
                     "⚠ Zephyr's answer contained suspicious information."
                 )
 
-
-            # ----------------------------------------------------
-            # HELP
-            # ----------------------------------------------------
-
             elif strategy == "help":
 
                 response = (
                     normal_response
-                    +
-                    "\n\n"
-                    "They offer to help you investigate "
-                    "the facility."
+                    + "\n\n"
+                    "They offer to help you investigate the facility."
                 )
 
                 self.change_suspicion(
                     self.mole,
-                    -8
+                    -5
                 )
 
                 self.ai_help_count += 1
@@ -414,11 +317,6 @@ class Game:
                 self.activity_log.append(
                     "🤝 Zephyr cooperated with the investigation."
                 )
-
-
-            # ----------------------------------------------------
-            # TRUTH
-            # ----------------------------------------------------
 
             else:
 
@@ -430,15 +328,13 @@ class Game:
                     "💬 Zephyr answered directly."
                 )
 
-
-        # ========================================================
-        # OTHER SURVIVORS
-        # ========================================================
+        # --------------------------------------------------
+        # QUESTIONING OTHER CHARACTERS
+        # --------------------------------------------------
 
         else:
 
             response = normal_response
-
 
             if "Zephyr" in response:
 
@@ -449,7 +345,7 @@ class Game:
 
                 self.activity_log.append(
                     f"🔎 {character}'s testimony increased "
-                    f"suspicion toward Zephyr."
+                    "suspicion toward Zephyr."
                 )
 
             else:
@@ -458,7 +354,6 @@ class Game:
                     f"💬 {character} answered your question."
                 )
 
-
         self.last_event = {
             "type": "question",
             "character": character,
@@ -466,28 +361,16 @@ class Game:
             "response": response
         }
 
-
         return True
-
-
-    # ============================================================
-    # LIE GENERATOR
-    # ============================================================
 
     def generate_lie(self):
 
         lies = [
-
             "I was nowhere near the cafeteria when that happened.",
-
             "I don't remember seeing anything unusual.",
-
             "I was helping someone else in the facility.",
-
             "I think Raven was acting suspiciously.",
-
             "I'm certain Luca was near the storage area.",
-
             "Everything was completely normal."
         ]
 
@@ -498,11 +381,6 @@ class Game:
 
         return lies[index]
 
-
-    # ============================================================
-    # ACCUSATION
-    # ============================================================
-
     def accuse(self, character):
 
         if self.game_over:
@@ -511,18 +389,13 @@ class Game:
         if character not in CHARACTERS:
             return
 
-
-        # Accusation uses one action if available.
         if self.actions_remaining > 0:
-
             self.use_action(
                 f"Accuse {character}"
             )
 
-
         self.accused = character
         self.game_over = True
-
 
         if character == self.mole:
 
@@ -530,6 +403,11 @@ class Game:
 
             result = (
                 f"Correct. {character} was the mole."
+            )
+
+            self.activity_log.append(
+                f"🎉 {self.player_name} correctly identified "
+                f"{character} as the mole."
             )
 
         else:
@@ -540,16 +418,15 @@ class Game:
                 f"Incorrect. {character} was not the mole."
             )
 
+            self.activity_log.append(
+                f"❌ {self.player_name} accused {character}, "
+                "but the accusation was incorrect."
+            )
 
         self.last_event = {
             "type": "accusation",
             "result": result
         }
-
-
-    # ============================================================
-    # BEST CURRENT SUSPECT
-    # ============================================================
 
     def best_suspect(self):
 
