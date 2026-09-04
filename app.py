@@ -4,6 +4,12 @@ import streamlit as st
 
 from game import Game
 
+st.set_page_config(page_title="Mole", layout="wide")
+
+st.markdown(
+    "<h1 style='color:red;'>TEST — HTML WORKS</h1>",
+    unsafe_allow_html=True
+)
 from case import (
     CHARACTERS,
     ROOMS,
