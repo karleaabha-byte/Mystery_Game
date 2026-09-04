@@ -1,30 +1,18 @@
-# app.py code
-
 import streamlit as st
 
 from game import Game
-
-st.set_page_config(page_title="Mole", layout="wide")
-
-st.markdown(
-    "<h1 style='color:red;'>TEST — HTML WORKS</h1>",
-    unsafe_allow_html=True
-)
-from case import (
-    CHARACTERS,
-    ROOMS,
-    QUESTIONS
-)
+from case import CHARACTERS, ROOMS, QUESTIONS
 
 
 # ============================================================
-# PAGE
+# PAGE CONFIG
 # ============================================================
 
 st.set_page_config(
     page_title="Who Is The Mole?",
     page_icon="🧟",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 
@@ -33,9 +21,7 @@ st.set_page_config(
 # ============================================================
 
 if "game" not in st.session_state:
-
     st.session_state.game = Game()
-
 
 game = st.session_state.game
 
@@ -44,294 +30,164 @@ game = st.session_state.game
 # CSS
 # ============================================================
 
-st.markdown(
-    """
+st.markdown("""
 <style>
 
 .stApp {
-    background:
-        radial-gradient(
-            circle at top,
-            #202020 0%,
-            #101010 45%,
-            #080808 100%
-        );
+    background: #0b0b0b;
     color: #eeeeee;
 }
 
+.block-container {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    max-width: 1400px;
+}
 
-/* ------------------------------
-   HEADER
------------------------------- */
+/* Main title */
 
-.game-title {
+.main-title {
     text-align: center;
-    font-size: 52px;
+    font-size: 3rem;
     font-weight: 900;
-    letter-spacing: 7px;
-    margin-top: 10px;
+    letter-spacing: 5px;
     margin-bottom: 0;
 }
 
-.game-subtitle {
+.subtitle {
     text-align: center;
-    color: #999999;
-    font-size: 16px;
+    color: #888888;
     letter-spacing: 2px;
-    margin-bottom: 25px;
+    margin-bottom: 2rem;
 }
 
+/* Cards */
 
-/* ------------------------------
-   ACTION COUNTER
------------------------------- */
+.card {
+    background: #171717;
+    border: 1px solid #3d3d3d;
+    border-radius: 8px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+}
 
-.action-box {
-    border: 2px solid #888888;
-    background: #161616;
-    padding: 15px;
+.card-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+.muted {
+    color: #999999;
+}
+
+/* Action counter */
+
+.action-container {
+    background: #151515;
+    border: 2px solid #555555;
+    border-radius: 8px;
+    padding: 1rem;
     text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 2rem;
 }
 
 .action-number {
-    font-size: 34px;
-    font-weight: bold;
+    font-size: 2.5rem;
+    font-weight: 900;
 }
 
 .action-label {
-    font-size: 12px;
-    color: #999999;
+    color: #888888;
+    font-size: 0.75rem;
     letter-spacing: 3px;
 }
 
+/* Evidence */
 
-/* ------------------------------
-   ROOM CARD
------------------------------- */
-
-.room-card {
-    background: #171717;
-    border: 1px solid #444444;
-    padding: 20px;
-    min-height: 220px;
-    margin-bottom: 10px;
+.evidence {
+    background: #1b1b1b;
+    border-left: 4px solid #888888;
+    padding: 1rem;
+    margin: 0.5rem 0;
+    border-radius: 4px;
 }
 
-.room-icon {
-    font-size: 45px;
-}
+/* Paper */
 
-.room-title {
-    font-size: 24px;
-    font-weight: bold;
-}
-
-.room-description {
-    color: #aaaaaa;
-    font-size: 14px;
-}
-
-
-/* ------------------------------
-   NOTE
------------------------------- */
-
-.note {
-    background: #d9d0b7;
-    color: #25221c;
-    padding: 28px;
-    margin: 15px 0;
-    border: 3px solid #81765c;
-    box-shadow:
-        4px 4px 0px #000000;
+.paper {
+    background: #ddd5bd;
+    color: #29251d;
+    padding: 2rem;
+    border-radius: 4px;
     font-family: Georgia, serif;
 }
 
-.note-header {
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
-    border-bottom: 2px solid #5d5543;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
-}
-
-.note-body {
-    font-size: 16px;
-    line-height: 1.7;
-}
-
-.note-signature {
-    text-align: right;
-    margin-top: 20px;
-    font-style: italic;
-}
-
-
-/* ------------------------------
-   INCIDENT TABLE
------------------------------- */
-
-.incident {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-.incident td {
-    padding: 7px;
-    border-bottom: 1px solid #91876e;
-}
-
-.incident-time {
-    font-weight: bold;
-    width: 80px;
-}
-
-
-/* ------------------------------
-   RIDDLE
------------------------------- */
+/* Riddle */
 
 .riddle {
-    background: #c8c0aa;
-    color: #211f1b;
-    padding: 30px;
-    border: 3px solid #726a57;
-    box-shadow: 5px 5px 0px #000;
+    background: #cfc6ae;
+    color: #25221c;
+    padding: 2rem;
+    border-radius: 5px;
+    text-align: center;
     font-family: Georgia, serif;
-    font-size: 19px;
-    white-space: pre-line;
-    text-align: center;
+    font-size: 1.1rem;
 }
 
-.riddle-title {
-    font-size: 23px;
-    font-weight: bold;
-    margin-bottom: 20px;
-}
+/* Warning */
 
-
-/* ------------------------------
-   VENDING MACHINE
------------------------------- */
-
-.vending {
-    background: #1b1b1b;
-    border: 4px solid #555555;
-    padding: 25px;
-    text-align: center;
-    box-shadow: 5px 5px 0px #000;
-}
-
-.vending-screen {
-    background: #101010;
-    border: 2px solid #777777;
-    padding: 20px;
-    margin: 15px;
-    font-family: monospace;
-    font-size: 26px;
-    letter-spacing: 6px;
-}
-
-.pin {
-    font-size: 42px;
-    font-weight: bold;
-}
-
-
-/* ------------------------------
-   SABOTAGE
------------------------------- */
-
-.damaged {
-    background: #241919;
-    border: 2px solid #704545;
-    padding: 25px;
-    color: #e0b0b0;
-}
-
-.warning {
-    font-weight: bold;
-    font-size: 18px;
-}
-
-
-/* ------------------------------
-   EVIDENCE
------------------------------- */
-
-.evidence-card {
-    background: #171717;
-    border-left: 4px solid #888888;
-    padding: 12px;
-    margin: 8px 0;
-}
-
-
-/* ------------------------------
-   SURVIVOR
------------------------------- */
-
-.survivor {
-    background: #171717;
-    border: 1px solid #444444;
-    padding: 15px;
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.survivor-name {
-    font-size: 19px;
-    font-weight: bold;
-}
-
-.suspicion {
-    font-family: monospace;
-    margin-top: 5px;
-}
-
-
-/* ------------------------------
-   RESULT
------------------------------- */
-
-.win {
-    background: #142417;
-    border: 2px solid #4c8655;
-    padding: 25px;
-    text-align: center;
-}
-
-.loss {
+.warning-box {
     background: #291717;
-    border: 2px solid #8c4c4c;
-    padding: 25px;
+    border: 1px solid #784646;
+    padding: 1rem;
+    border-radius: 5px;
+}
+
+/* Success */
+
+.success-box {
+    background: #142417;
+    border: 1px solid #4d8054;
+    padding: 2rem;
+    border-radius: 8px;
     text-align: center;
 }
 
+/* Failure */
 
-/* ------------------------------
-   OPTIMAL PATH
------------------------------- */
-
-.optimal {
-    background: #171717;
-    border: 2px solid #555555;
-    padding: 25px;
+.failure-box {
+    background: #291717;
+    border: 1px solid #8c4c4c;
+    padding: 2rem;
+    border-radius: 8px;
+    text-align: center;
 }
+
+/* Optimal path */
 
 .path-step {
-    background: #222222;
-    border-left: 3px solid #999999;
-    padding: 10px;
-    margin: 6px 0;
+    background: #191919;
+    border-left: 3px solid #888888;
+    padding: 0.8rem;
+    margin: 0.4rem 0;
+    border-radius: 3px;
+}
+
+/* Buttons */
+
+.stButton > button {
+    border-radius: 5px;
+    font-weight: 700;
+}
+
+/* Sidebar */
+
+section[data-testid="stSidebar"] {
+    background: #111111;
 }
 
 </style>
-""",
-    unsafe_allow_html=True
-)
+""", unsafe_allow_html=True)
 
 
 # ============================================================
@@ -339,12 +195,12 @@ st.markdown(
 # ============================================================
 
 st.markdown(
-    '<div class="game-title">🧟 WHO IS THE MOLE?</div>',
+    '<div class="main-title">🧟 WHO IS THE MOLE?</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
-    '<div class="game-subtitle">'
+    '<div class="subtitle">'
     'ADVERSARIAL AI AGENT • ZOMBIE APOCALYPSE SIMULATION'
     '</div>',
     unsafe_allow_html=True
@@ -352,25 +208,25 @@ st.markdown(
 
 
 # ============================================================
-# ACTION BAR
+# ACTION COUNTER
 # ============================================================
 
 st.markdown(
     f"""
-    <div class="action-box">
+    <div class="action-container">
         <div class="action-label">
-            MAXIMUM INVESTIGATION BUDGET
+            INVESTIGATION ACTIONS REMAINING
         </div>
 
         <div class="action-number">
             {game.actions_remaining}
-            <span style="font-size:18px;color:#777;">
+            <span style="font-size:1.2rem;color:#777;">
                 / {game.max_actions}
             </span>
         </div>
 
         <div class="action-label">
-            ACTIONS REMAINING
+            MAXIMUM INVESTIGATION BUDGET
         </div>
     </div>
     """,
@@ -384,26 +240,20 @@ st.markdown(
 
 with st.sidebar:
 
-    st.markdown("## 📁 CASE FILE")
+    st.header("📁 CASE FILE")
 
-    st.markdown(
-        "**CASE**  \n"
-        "Zombie Apocalypse Mole Identification"
-    )
+    st.write("**CASE**")
+    st.write("Zombie Apocalypse Mole Identification")
 
-    st.markdown(
-        "**LOCATION**  \n"
-        "Research Facility"
-    )
+    st.write("**LOCATION**")
+    st.write("Research Facility")
 
-    st.markdown(
-        "**ROLE**  \n"
-        "Researcher"
-    )
+    st.write("**ROLE**")
+    st.write("Researcher")
 
     st.divider()
 
-    st.markdown("### 🎯 OBJECTIVE")
+    st.subheader("🎯 OBJECTIVE")
 
     st.write(
         "Identify the survivor secretly controlled "
@@ -412,30 +262,28 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("### 📋 RULES")
+    st.subheader("📋 RULES")
 
     st.write("• Maximum 12 actions")
     st.write("• Each room can be investigated once")
     st.write("• Each survivor can be questioned once")
     st.write("• AI actions do not consume your actions")
-    st.write("• Make the final accusation when ready")
+    st.write("• Accuse the suspected mole when ready")
 
     st.divider()
 
-    st.markdown("### 🤖 AI BEHAVIOUR")
+    st.subheader("🤖 AI BEHAVIOUR")
 
     st.write(
-        "The mole observes your investigation and "
-        "changes its behaviour."
+        "The mole adapts its behaviour according to "
+        "your current suspicion."
     )
 
-    st.write(
-        "It can:"
-    )
+    st.write("The AI can:")
 
     st.write("• Lie")
     st.write("• Tell the truth")
-    st.write("• Help you")
+    st.write("• Help the researcher")
     st.write("• Sabotage cafeteria evidence")
     st.write("• Manipulate the storage riddle")
 
@@ -447,7 +295,6 @@ with st.sidebar:
     ):
 
         st.session_state.game = Game()
-
         st.rerun()
 
 
@@ -455,9 +302,9 @@ with st.sidebar:
 # SURVIVORS
 # ============================================================
 
-st.markdown("## 👥 SURVIVORS")
+st.header("👥 SURVIVORS")
 
-survivor_columns = st.columns(5)
+survivor_columns = st.columns(len(CHARACTERS))
 
 for i, character in enumerate(CHARACTERS):
 
@@ -467,20 +314,20 @@ for i, character in enumerate(CHARACTERS):
 
         st.markdown(
             f"""
-            <div class="survivor">
-
-                <div class="survivor-name">
+            <div class="card">
+                <div class="card-title">
                     {character}
                 </div>
 
-                <div class="suspicion">
+                <div class="muted">
                     Suspicion: {suspicion}%
                 </div>
-
             </div>
             """,
             unsafe_allow_html=True
         )
+
+        st.progress(suspicion / 100)
 
 
 # ============================================================
@@ -502,14 +349,13 @@ room_tab, question_tab, accusation_tab = st.tabs(
 
 with room_tab:
 
-    st.markdown("## 🚪 INVESTIGATION ROOMS")
+    st.header("🚪 INVESTIGATION ROOMS")
 
     st.write(
-        "Search the facility for physical evidence."
+        "Investigate the facility and search for physical evidence."
     )
 
     room_columns = st.columns(3)
-
 
     for i, room in enumerate(ROOMS):
 
@@ -517,47 +363,29 @@ with room_tab:
 
         with room_columns[i]:
 
-            visited = room in game.visited_rooms
-
-            st.markdown(
-                f"""
-                <div class="room-card">
-
-                    <div class="room-icon">
-                        {data["icon"]}
-                    </div>
-
-                    <div class="room-title">
-                        {room}
-                    </div>
-
-                    <div class="room-description">
-                        {data["description"]}
-                    </div>
-
-                </div>
-                """,
-                unsafe_allow_html=True
+            st.subheader(
+                f"{data['icon']} {room}"
             )
 
+            st.write(data["description"])
+
+            st.caption(
+                f"Object: {data['object']}"
+            )
+
+            visited = room in game.visited_rooms
 
             if visited:
 
-                st.success(
-                    "✓ INVESTIGATED"
-                )
+                st.success("✓ INVESTIGATED")
 
             elif game.game_over:
 
-                st.info(
-                    "CASE CLOSED"
-                )
+                st.info("CASE CLOSED")
 
             elif game.actions_remaining == 0:
 
-                st.warning(
-                    "NO ACTIONS"
-                )
+                st.warning("NO ACTIONS REMAINING")
 
             else:
 
@@ -568,12 +396,11 @@ with room_tab:
                 ):
 
                     game.visit_room(room)
-
                     st.rerun()
 
 
     # ========================================================
-    # SHOW ROOM EVIDENCE
+    # ROOM EVIDENCE
     # ========================================================
 
     if (
@@ -585,14 +412,14 @@ with room_tab:
 
         st.divider()
 
-        st.markdown(
-            f"## {ROOMS[room]['icon']} {room.upper()} — EVIDENCE"
+        st.header(
+            f"{ROOMS[room]['icon']} {room.upper()} — EVIDENCE"
         )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # LABORATORY
-        # ====================================================
+        # ----------------------------------------------------
 
         if room == "Laboratory":
 
@@ -600,87 +427,87 @@ with room_tab:
 
             st.markdown(
                 f"""
-                <div class="note">
+                <div class="paper">
 
-                    <div class="note-header">
-                        {data["title"]}
+                <h2 style="text-align:center;">
+                    {data["title"]}
+                </h2>
+
+                <h4>
+                    {data["date"]}
+                </h4>
+
+                """,
+                unsafe_allow_html=True
+            )
+
+            for time, event in data["lines"]:
+
+                st.markdown(
+                    f"""
+                    <div style="
+                        padding:7px;
+                        border-bottom:1px solid #91876e;
+                    ">
+                        <b>{time}</b>
+                        &nbsp;&nbsp;
+                        {event}
                     </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
-                    <b>{data["date"]}</b>
+            st.markdown(
+                f"""
+                <br>
 
-                    <br><br>
+                <b>FIELD NOTE</b>
 
-                    <table class="incident">
-                        {
-                            ''.join(
-                                f'''
-                                <tr>
-                                    <td class="incident-time">
-                                        {time}
-                                    </td>
-                                    <td>
-                                        {event}
-                                    </td>
-                                </tr>
-                                '''
-                                for time, event in data["lines"]
-                            )
-                        }
-                    </table>
+                <p>
+                    "{data["note"]}"
+                </p>
 
-                    <br>
-
-                    <b>FIELD NOTE</b>
-
-                    <p>
-                        "{data["note"]}"
-                    </p>
-
-                    <div class="note-signature">
-                        {data["signature"]}
-                    </div>
+                <p style="text-align:right;">
+                    <i>{data["signature"]}</i>
+                </p>
 
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
-
             st.info(
-                "The note suggests that the saboteur knew "
-                "which systems to target. This clue should "
-                "be compared with survivor testimony."
+                "The report suggests that the saboteur knew "
+                "which systems to target. Compare this with "
+                "survivor testimony."
             )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # STORAGE
-        # ====================================================
+        # ----------------------------------------------------
 
         elif room == "Storage":
 
             data = ROOMS["Storage"]["normal_clue"]
 
-
             if game.riddle_manipulated:
 
                 st.markdown(
                     """
-                    <div class="damaged">
+                    <div class="warning-box">
 
-                        <div class="warning">
-                            ⚠ EVIDENCE TAMPERING DETECTED
-                        </div>
+                    <b>⚠ EVIDENCE TAMPERING DETECTED</b>
 
-                        <br>
+                    <p>
+                    The original riddle appears to have been
+                    deliberately modified.
+                    </p>
 
-                        The original riddle appears to have been
-                        modified.
-
-                        <br><br>
-
-                        Several words have been crossed out
-                        and replaced.
+                    <p>
+                    Several words have been crossed out
+                    and replaced.
+                    </p>
 
                     </div>
                     """,
@@ -691,22 +518,22 @@ with room_tab:
                     """
                     <div class="riddle">
 
-                        <div class="riddle-title">
-                            HANDWRITTEN NOTE — BOX 17
-                        </div>
+                    <h3>
+                    HANDWRITTEN NOTE — BOX 17
+                    </h3>
 
-                        I have no feet, but I can follow.<br>
-                        I have no mouth, but I can warn.<br>
+                    I have no feet, but I can follow.<br>
+                    I have no mouth, but I can warn.<br><br>
 
-                        <s>
-                        I disappear when the lights go out.
-                        </s>
+                    <s>
+                    I disappear when the lights go out.
+                    </s>
 
-                        <br><br>
+                    <br><br>
 
-                        <b>
-                        "I disappear when nobody is watching."
-                        </b>
+                    <b>
+                    "I disappear when nobody is watching."
+                    </b>
 
                     </div>
                     """,
@@ -724,17 +551,17 @@ with room_tab:
                     f"""
                     <div class="riddle">
 
-                        <div class="riddle-title">
-                            {data["title"]}
-                        </div>
+                    <h3>
+                    {data["title"]}
+                    </h3>
 
-                        {data["text"].replace(chr(10), "<br>")}
+                    {data["text"].replace(chr(10), "<br>")}
 
-                        <br><br>
+                    <br><br>
 
-                        <small>
-                            {data["hint"]}
-                        </small>
+                    <small>
+                    {data["hint"].replace(chr(10), "<br>")}
+                    </small>
 
                     </div>
                     """,
@@ -742,110 +569,75 @@ with room_tab:
                 )
 
 
-        # ====================================================
+        # ----------------------------------------------------
         # CAFETERIA
-        # ====================================================
+        # ----------------------------------------------------
 
         elif room == "Cafeteria":
 
             data = ROOMS["Cafeteria"]["normal_clue"]
 
-
             if game.cafeteria_sabotaged:
 
                 st.markdown(
                     """
-                    <div class="damaged">
+                    <div class="warning-box">
 
-                        <div class="warning">
-                            ⚠ VENDING UNIT DAMAGED
-                        </div>
+                    <h3>
+                    ⚠ VENDING UNIT DAMAGED
+                    </h3>
 
-                        <br>
+                    <p>
+                    Someone has torn away part of the
+                    maintenance note.
+                    </p>
 
-                        Someone has torn away part of the
-                        maintenance note.
-
-                        <br><br>
-
-                        The original PIN instructions are
-                        incomplete.
+                    <p>
+                    The original PIN instructions are
+                    incomplete.
+                    </p>
 
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
-
-                st.markdown(
+                st.code(
                     """
-                    <div class="vending">
+SURVIVOR SUPPLY UNIT
 
-                        <h2>
-                            SURVIVOR SUPPLY UNIT
-                        </h2>
+PIN: 1_
 
-                        <div class="vending-screen">
-                            PIN: 1_
-                        </div>
+SYSTEM STATUS:
+PARTIAL EVIDENCE
 
-                        <p>
-                            SYSTEM STATUS:
-                            <b>PARTIAL EVIDENCE</b>
-                        </p>
-
-                        <p>
-                            [ MAINTENANCE NOTE DAMAGED ]
-                        </p>
-
-                    </div>
+[ MAINTENANCE NOTE DAMAGED ]
                     """,
-                    unsafe_allow_html=True
+                    language="text"
                 )
 
             else:
 
-                st.markdown(
+                st.code(
                     f"""
-                    <div class="vending">
+SURVIVOR SUPPLY UNIT
 
-                        <h2>
-                            SURVIVOR SUPPLY UNIT
-                        </h2>
+ENTER EMERGENCY PIN
 
-                        <div class="vending-screen">
+PIN: {data["pin"]}
 
-                            ENTER EMERGENCY PIN
-
-                            <br><br>
-
-                            <span class="pin">
-                                {data["pin"]}
-                            </span>
-
-                        </div>
-
-                        <h4>
-                            MAINTENANCE NOTE
-                        </h4>
-
-                        <p>
-                            {data["instruction"]}
-                        </p>
-
-                        <p>
-                            Current survivors:
-                            <b>{data["survivors"]}</b>
-                        </p>
-
-                    </div>
+SYSTEM STATUS:
+OPERATIONAL
                     """,
-                    unsafe_allow_html=True
+                    language="text"
                 )
 
                 st.info(
-                    data["note"]
+                    f"{data['instruction']}  "
+                    f"Current survivors: {data['survivors']}"
                 )
+
+                st.caption(data["note"])
 
 
 # ============================================================
@@ -854,56 +646,54 @@ with room_tab:
 
 with question_tab:
 
-    st.markdown("## 💬 INTERROGATION ROOM")
+    st.header("💬 INTERROGATION ROOM")
 
     st.write(
         "Each survivor can be questioned only once."
     )
 
+    q1, q2 = st.columns([1, 2])
 
-    q_columns = st.columns([1, 2])
-
-
-    with q_columns[0]:
+    with q1:
 
         character = st.selectbox(
             "SURVIVOR",
-            CHARACTERS
+            CHARACTERS,
+            key="selected_character"
         )
 
+        suspicion = game.suspicion[character]
 
         st.markdown(
             f"""
-            <div class="survivor">
+            <div class="card">
 
-                <div class="survivor-name">
-                    {character}
-                </div>
+            <div class="card-title">
+                {character}
+            </div>
 
-                <div class="suspicion">
-                    Current suspicion:
-                    {game.suspicion[character]}%
-                </div>
+            <p>
+                Current suspicion: <b>{suspicion}%</b>
+            </p>
 
             </div>
             """,
             unsafe_allow_html=True
         )
 
+        st.progress(suspicion / 100)
 
-    with q_columns[1]:
+    with q2:
 
         question = st.selectbox(
             "QUESTION",
-            QUESTIONS
+            QUESTIONS,
+            key="selected_question"
         )
-
 
         already_questioned = (
-            character
-            in game.questioned_characters
+            character in game.questioned_characters
         )
-
 
         if already_questioned:
 
@@ -913,20 +703,16 @@ with question_tab:
 
         elif game.game_over:
 
-            st.info(
-                "The case is closed."
-            )
+            st.info("The case is closed.")
 
         elif game.actions_remaining <= 0:
 
-            st.warning(
-                "You have no actions remaining."
-            )
+            st.warning("You have no actions remaining.")
 
         else:
 
             if st.button(
-                "ASK QUESTION",
+                "💬 ASK QUESTION",
                 use_container_width=True
             ):
 
@@ -939,7 +725,7 @@ with question_tab:
 
 
     # ========================================================
-    # SHOW RESPONSE
+    # RESPONSE
     # ========================================================
 
     if (
@@ -951,28 +737,27 @@ with question_tab:
 
         st.divider()
 
-        st.markdown(
-            f"### 💬 {event['character']}'s Response"
+        st.subheader(
+            f"💬 {event['character']}'s Response"
         )
-
 
         st.markdown(
             f"""
-            <div class="note">
+            <div class="paper">
 
-                <b>QUESTION</b>
+            <b>QUESTION</b>
 
-                <p>
-                    {event["question"]}
-                </p>
+            <p>
+            {event["question"]}
+            </p>
 
-                <hr>
+            <hr>
 
-                <b>RESPONSE</b>
+            <b>RESPONSE</b>
 
-                <p>
-                    {event["response"]}
-                </p>
+            <p>
+            {event["response"]}
+            </p>
 
             </div>
             """,
@@ -986,41 +771,38 @@ with question_tab:
 
 with accusation_tab:
 
-    st.markdown("## ⚖️ FINAL ACCUSATION")
+    st.header("⚖️ FINAL ACCUSATION")
 
     st.write(
-        "When you believe you have enough evidence, "
-        "identify the suspected AI-controlled survivor."
+        "When you have enough evidence, identify the "
+        "survivor controlled by the AI."
     )
-
 
     if not game.game_over:
 
         accused = st.selectbox(
             "WHO IS THE MOLE?",
-            CHARACTERS
+            CHARACTERS,
+            key="accused_character"
         )
-
 
         st.markdown(
             f"""
-            <div class="survivor">
+            <div class="card">
 
-                <div class="survivor-name">
-                    Your accusation:
-                    {accused}
-                </div>
+            <div class="card-title">
+                Current Accusation: {accused}
+            </div>
 
-                <div class="suspicion">
-                    Current suspicion:
-                    {game.suspicion[accused]}%
-                </div>
+            <p>
+                Suspicion level:
+                <b>{game.suspicion[accused]}%</b>
+            </p>
 
             </div>
             """,
             unsafe_allow_html=True
         )
-
 
         if st.button(
             "⚖️ MAKE FINAL ACCUSATION",
@@ -1028,78 +810,56 @@ with accusation_tab:
         ):
 
             game.accuse(accused)
-
             st.rerun()
 
-
     else:
-
-        # ====================================================
-        # WIN
-        # ====================================================
 
         if game.researcher_won:
 
             st.markdown(
                 f"""
-                <div class="win">
+                <div class="success-box">
 
-                    <h1>
-                        🏆 CASE SOLVED
-                    </h1>
+                <h1>🏆 CASE SOLVED</h1>
 
-                    <h2>
-                        RESEARCHER WINS
-                    </h2>
+                <h2>RESEARCHER WINS</h2>
 
-                    <p>
-                        Your accusation of
-                        <b>{game.accused}</b>
-                        was correct.
-                    </p>
+                <p>
+                Your accusation of
+                <b>{game.accused}</b>
+                was correct.
+                </p>
 
                 </div>
                 """,
                 unsafe_allow_html=True
             )
-
-
-        # ====================================================
-        # LOSS
-        # ====================================================
 
         else:
 
             st.markdown(
                 f"""
-                <div class="loss">
+                <div class="failure-box">
 
-                    <h1>
-                        ☠️ INVESTIGATION FAILED
-                    </h1>
+                <h1>☠️ INVESTIGATION FAILED</h1>
 
-                    <h2>
-                        MOLE WINS
-                    </h2>
+                <h2>MOLE WINS</h2>
 
-                    <p>
-                        You accused
-                        <b>{game.accused}</b>.
-                    </p>
+                <p>
+                You accused
+                <b>{game.accused}</b>.
+                </p>
 
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
-
         st.divider()
 
-        st.markdown(
-            "### 🔓 CASE REVEALED"
-        )
+        st.subheader("🔓 CASE REVEALED")
 
-        st.write(
+        st.success(
             f"The AI-controlled mole was **{game.mole}**."
         )
 
@@ -1110,8 +870,7 @@ with accusation_tab:
 
 st.divider()
 
-st.markdown("## 🗂️ EVIDENCE BOARD")
-
+st.header("🗂️ EVIDENCE BOARD")
 
 if not game.evidence:
 
@@ -1126,7 +885,7 @@ else:
 
         st.markdown(
             f"""
-            <div class="evidence-card">
+            <div class="evidence">
                 🔎 {evidence}
             </div>
             """,
@@ -1138,21 +897,15 @@ else:
 # ACTIVITY LOG
 # ============================================================
 
-with st.expander(
-    "📡 INVESTIGATION ACTIVITY LOG"
-):
+with st.expander("📡 INVESTIGATION ACTIVITY LOG"):
 
     if not game.activity_log:
 
-        st.write(
-            "No activity yet."
-        )
+        st.write("No activity yet.")
 
     else:
 
-        for item in reversed(
-            game.activity_log
-        ):
+        for item in reversed(game.activity_log):
 
             st.write(item)
 
@@ -1165,48 +918,38 @@ if game.game_over:
 
     st.divider()
 
-    st.markdown("## 📊 INVESTIGATION ANALYTICS")
-
+    st.header("📊 INVESTIGATION ANALYTICS")
 
     col1, col2, col3, col4 = st.columns(4)
 
-
     with col1:
-
         st.metric(
             "Actions Used",
             game.actions_used
         )
 
-
     with col2:
-
         st.metric(
             "Actions Remaining",
             game.actions_remaining
         )
 
-
     with col3:
-
         st.metric(
             "AI Lies",
             game.ai_lie_count
         )
 
-
     with col4:
-
         st.metric(
             "AI Sabotage",
             game.ai_sabotage_count
         )
 
 
-    st.markdown("### 🤖 AI BEHAVIOUR")
+    st.subheader("🤖 AI BEHAVIOUR")
 
     ai1, ai2, ai3 = st.columns(3)
-
 
     with ai1:
 
@@ -1215,14 +958,12 @@ if game.game_over:
             game.ai_truth_count
         )
 
-
     with ai2:
 
         st.metric(
             "Help Actions",
             game.ai_help_count
         )
-
 
     with ai3:
 
@@ -1233,79 +974,49 @@ if game.game_over:
 
 
     # ========================================================
-    # OPTIMAL PATH
+    # COUNTERFACTUAL OPTIMAL PATH
     # ========================================================
 
     st.divider()
 
-    st.markdown(
-        "## 🧠 COUNTERFACTUAL OPTIMAL PATH"
-    )
+    st.header("🧠 COUNTERFACTUAL OPTIMAL PATH")
 
     st.write(
-        "Regardless of whether you won or lost, "
-        "the system compares your investigation with "
-        "a minimum-action solution."
+        "This shows how the investigation could have been "
+        "completed using fewer actions."
     )
 
-
-    # --------------------------------------------------------
-    # Current simple optimal solution
-    #
-    # For this case, the most informative combination
-    # is based on evidence that points toward Zephyr.
-    # --------------------------------------------------------
-
     optimal_path = [
-
         "Investigate Laboratory",
-
         "Investigate Cafeteria",
-
         "Question Raven",
-
         "Question Luca",
-
         "Question Zephyr",
-
         "Accuse Zephyr"
     ]
 
-
-    optimal_actions = len(
-        optimal_path
-    )
-
+    optimal_actions = len(optimal_path)
 
     actual_actions = game.actions_used
 
+    m1, m2 = st.columns(2)
 
-    st.markdown(
-        f"""
-        <div class="optimal">
+    with m1:
 
-            <h3>
-                MINIMUM-ACTION SOLUTION
-            </h3>
+        st.metric(
+            "Your Investigation",
+            f"{actual_actions} actions"
+        )
 
-            <p>
-                Your investigation:
-                <b>{actual_actions} actions</b>
-            </p>
+    with m2:
 
-            <p>
-                Suggested optimal investigation:
-                <b>{optimal_actions} actions</b>
-            </p>
-
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+        st.metric(
+            "Suggested Solution",
+            f"{optimal_actions} actions"
+        )
 
 
-    st.markdown("### 🔎 OPTIMAL INVESTIGATION PATH")
-
+    st.subheader("🔎 OPTIMAL INVESTIGATION PATH")
 
     for i, step in enumerate(
         optimal_path,
@@ -1315,22 +1026,16 @@ if game.game_over:
         st.markdown(
             f"""
             <div class="path-step">
-
-                <b>
-                    {i}.
-                </b>
-
-                {step}
-
+                <b>{i}.</b> {step}
             </div>
             """,
             unsafe_allow_html=True
         )
 
 
-    # --------------------------------------------------------
+    # ========================================================
     # EFFICIENCY
-    # --------------------------------------------------------
+    # ========================================================
 
     if actual_actions > 0:
 
@@ -1339,11 +1044,12 @@ if game.game_over:
             (optimal_actions / actual_actions) * 100
         )
 
+        st.subheader("⚡ INVESTIGATION EFFICIENCY")
+
         st.progress(
             efficiency / 100
         )
 
         st.write(
-            f"Investigation efficiency: "
-            f"**{efficiency:.1f}%**"
+            f"Efficiency: **{efficiency:.1f}%**"
         )
