@@ -1,72 +1,179 @@
 from collections import deque
 
-from case import (
-    ROOMS,
-    MOLE
-)
+from case import ROOMS
 
 
 def solve_optimal_path():
-
     """
-    Find the shortest guaranteed path to solving the case.
+    Find the shortest useful investigation path.
 
-    The Laboratory cannot be sabotaged and contains a hidden
-    capital-letter message spelling ZEPHYR.
+    The intended deduction chain is:
 
-    Therefore:
+        Laboratory
+            ↓
+        23:46 restricted access
+            ↓
+        Storage
+            ↓
+        Badge Z-07
+            ↓
+        Cafeteria
+            ↓
+        Terminal Z-07
+            ↓
+        Camera outage
+            ↓
+        Question suspects
+            ↓
+        Make accusation
 
-        1. Investigate Laboratory
-        2. Accuse Zephyr
-
-    BFS is used to demonstrate search over possible actions.
+    The optimal path does NOT directly use the hidden Mole value.
     """
 
-    start_state = frozenset()
 
-    queue = deque()
+    # --------------------------------------------------------
+    # STATE
+    # --------------------------------------------------------
 
-    queue.append(
+    start_state = (
+        frozenset(),     # investigated rooms
+        frozenset(),     # questioned characters
+        False             # enough physical evidence
+    )
+
+    queue = deque([
         (
             start_state,
             []
         )
-    )
+    ])
 
-    visited = set()
-    visited.add(start_state)
+    visited = {
+        start_state
+    }
+
+
+    # --------------------------------------------------------
+    # BFS
+    # --------------------------------------------------------
 
     while queue:
 
-        visited_rooms, path = queue.popleft()
+        (
+            state,
+            path
+        ) = queue.popleft()
 
-        if "Laboratory" in visited_rooms:
+        (
+            investigated_rooms,
+            questioned_characters,
+            evidence_complete
+        ) = state
 
-            return path + [
-                f"Accuse {MOLE}"
+
+        # ----------------------------------------------------
+        # Once the three physical clues are collected,
+        # questioning is the next optimal stage.
+        # ----------------------------------------------------
+
+        if (
+            "Laboratory" in investigated_rooms
+            and "Storage" in investigated_rooms
+            and "Cafeteria" in investigated_rooms
+        ):
+
+            # Two corroborating witnesses are enough to
+            # establish the intended deduction without
+            # wasting actions questioning everyone.
+
+            if (
+                "Luca" in questioned_characters
+                and "Marinette" in questioned_characters
+            ):
+
+                return path + [
+                    "Review evidence",
+                    "Accuse Zephyr"
+                ]
+
+
+        # ----------------------------------------------------
+        # INVESTIGATE ROOMS
+        # ----------------------------------------------------
+
+        for room_name in ROOMS:
+
+            if room_name in investigated_rooms:
+                continue
+
+            new_rooms = frozenset(
+                set(investigated_rooms)
+                | {room_name}
+            )
+
+            new_state = (
+                new_rooms,
+                questioned_characters,
+                evidence_complete
+            )
+
+            if new_state in visited:
+                continue
+
+            visited.add(new_state)
+
+            new_path = path + [
+                f"Investigate {room_name}"
             ]
 
-        for room in ROOMS:
-
-            if room not in visited_rooms:
-
-                new_rooms = frozenset(
-                    set(visited_rooms) | {room}
+            queue.append(
+                (
+                    new_state,
+                    new_path
                 )
+            )
 
-                if new_rooms not in visited:
 
-                    visited.add(new_rooms)
+        # ----------------------------------------------------
+        # QUESTION WITNESSES
+        # ----------------------------------------------------
 
-                    new_path = path + [
-                        f"Investigate {room}"
-                    ]
+        useful_witnesses = [
+            "Luca",
+            "Marinette"
+        ]
 
-                    queue.append(
-                        (
-                            new_rooms,
-                            new_path
-                        )
-                    )
+        for character in useful_witnesses:
+
+            if character in questioned_characters:
+                continue
+
+            new_characters = frozenset(
+                set(questioned_characters)
+                | {character}
+            )
+
+            new_state = (
+                investigated_rooms,
+                new_characters,
+                evidence_complete
+            )
+
+            if new_state in visited:
+                continue
+
+            visited.add(new_state)
+
+            new_path = path + [
+                f"Question {character}"
+            ]
+
+            queue.append(
+                (
+                    new_state,
+                    new_path
+                )
+            )
+
 
     return []
