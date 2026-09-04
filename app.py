@@ -607,13 +607,13 @@ if (
                     I have no mouth, but I can warn.<br><br>
 
                     <s>
-                    I disappear when the lights go out.
+                        I disappear when the lights go out.
                     </s>
 
                     <br><br>
 
                     <b>
-                    "I disappear when nobody is watching."
+                        "I disappear when nobody is watching."
                     </b>
 
                 </div>
