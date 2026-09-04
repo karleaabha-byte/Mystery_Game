@@ -1,6 +1,6 @@
 import random
 
-
+#controller
 class MoleAI:
 
     def __init__(self, name):
