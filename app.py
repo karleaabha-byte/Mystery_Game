@@ -370,7 +370,6 @@ if st.button(
     "🔄 RESTART CASE",
     use_container_width=True
 ):
-
     st.session_state.game = Game()
     st.rerun()
 ```
@@ -489,7 +488,6 @@ for i, room in enumerate(ROOMS):
                 key=f"room_{room}",
                 use_container_width=True
             ):
-
                 game.visit_room(room)
                 st.rerun()
 
@@ -1211,18 +1209,3 @@ if actual_actions > 0:
         f"**{efficiency:.1f}%**"
     )
 ```
-
-````
-
-**Important:** the writing block above is just the chat formatting. When putting it into GitHub, copy **only the Python content**, starting at:
-
-`import streamlit as st`
-
-and ending at:
-
-`st.write(...)`
-
-There must be **no ` ```python` at the top and no ` ``` ` at the bottom**.
-
-After committing, reboot the Streamlit deployment.
-````
